@@ -2,6 +2,7 @@
 from dict2sdf import GetSDF
 from osm2dict import Osm2Dict
 from getMapImage import getMapImage
+from getOsmFile import getOsmFile
 
 #get map coords
 print("\nPlease enter the latitudnal and logitudnal" +
@@ -34,16 +35,20 @@ else:
 option = raw_input("Do you want to view the area specified? [Y/N]" +
                    " (default: Y) ").upper()
 
+osmFile = 'map.osm'
+osmDictionary = getOsmFile([min(startCoords[1], endCoords[1]),
+                            min(startCoords[0], endCoords[0]),
+                            max(startCoords[1], endCoords[1]),
+                            max(startCoords[0], endCoords[0])],
+                           osmFile)
+
 if option != 'N':
 
-    getMapImage([min(startCoords[1], endCoords[1]),
-                 min(startCoords[0], endCoords[0]),
-                 max(startCoords[1], endCoords[1]),
-                 max(startCoords[0], endCoords[0])])
+    getMapImage(osmFile)
 
 
 #Initialize the class
-osmRoads = Osm2Dict(startCoords[0], startCoords[1], endCoords[0], endCoords[1])
+osmRoads = Osm2Dict(startCoords[1], startCoords[0], osmDictionary)
 
 #get Road and model details
 roadPointWidthMap, modelPoseMap = osmRoads.getMapDetails()

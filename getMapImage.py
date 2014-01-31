@@ -3,7 +3,7 @@ import mapnik
 import os
 
 
-def getMapImage(box):
+def getMapImage(osmFile):
 
     highwaList = dict({"motorway": {'width': 4,
                                     'color': 'green',
@@ -63,8 +63,7 @@ def getMapImage(box):
 
         m.append_style(highwayType, styleType)
 
-    ds = mapnik.Osm(url='http://api.openstreetmap.org/api/0.6/map',
-                    bbox=str(box)[1:-1].replace(" ", ""))
+    ds = mapnik.Osm(file = osmFile)
 
     layer = mapnik.Layer('world')
     layer.datasource = ds

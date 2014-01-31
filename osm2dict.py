@@ -1,18 +1,14 @@
 #!/usr/bin/env python
-import osmapi
 import numpy as np
 
 
 class Osm2Dict:
 
-    def __init__(self, latStart, lonStart,
-                 latStop, lonStop):
+    def __init__(self, lonStart, latStart, data):
 
         self.latStart = latStart
-        self.latStop = latStop
         self.lonStart = lonStart
-        self.lonStop = lonStop
-
+        self.data = data
         #Radius of the Earth
         self.R = 6371
 
@@ -123,25 +119,18 @@ class Osm2Dict:
     def getMapDetails(self):
         ''' Returns a list of highways with corresponding widths
             and a list of all the models to be included'''
-        #initialize the Open street api
-        MyApi = osmapi.OsmApi()
-        #Get the map data reqd
-        data = MyApi.Map(min(self.lonStart, self.lonStop),
-                         min(self.latStart, self.latStop),
-                         max(self.lonStart, self.lonStop),
-                         max(self.latStart, self.latStop))
 
         # get the road latitude and longitudes
-        for i in range(len(data)):
-            tagData = data[i].get("data").get("tag")
+        for i in range(len(self.data)):
+            tagData = self.data[i].get("data").get("tag")
 
             for modelNum in self.modelType:
 
                 if tagData.get(modelNum) in self.addModel.keys():
                     modelType = tagData.get(modelNum)
 
-                    coords = np.array([data[i].get("data").get("lon"),
-                                       data[i].get("data").get("lat")])
+                    coords = np.array([self.data[i].get("data").get("lon"),
+                                       self.data[i].get("data").get("lat")])
                     coords = np.reshape(coords, (len(coords)/2, 2))
 
                     modelLocation = self.getPoints(coords)
@@ -157,7 +146,7 @@ class Osm2Dict:
                                              "mainModel": self.addModel
                                              [modelType]['modelName']}}))
 
-            if "way" in data[i].get("type"):
+            if "way" in self.data[i].get("type"):
                 if "highway" in tagData:
                     typeHighway = tagData.get("highway")
 
@@ -168,27 +157,27 @@ class Osm2Dict:
                                 if roadName is None:
                                     roadName = (typeHighway +
                                                 "_" +
-                                                str(data[i].get("data")
+                                                str(self.data[i].get("data")
                                                            .get("id")))
                                 else:
-                                    roadName += "_" + str(data[i].get("data")
+                                    roadName += "_" + str(self.data[i].get("data")
                                                                  .get("id"))
 
-                                node_ref = data[i].get("data").get("nd")
+                                node_ref = self.data[i].get("data").get("nd")
                                 coords = np.array([])
-                                for j in range(len(data)):
+                                for j in range(len(self.data)):
 
-                                    if "node" in data[j].get("type"):
+                                    if "node" in self.data[j].get("type"):
 
-                                        if (data[j].get("data")
+                                        if (self.data[j].get("data")
                                                    .get("id")) in node_ref:
 
                                             coords = np.append(coords,
-                                                               data[j]
+                                                               self.data[j]
                                                                .get("data")
                                                                .get("lon"))
                                             coords = np.append(coords,
-                                                               data[j]
+                                                               self.data[j]
                                                                .get("data")
                                                                .get("lat"))
                                             coords = np.reshape(coords,
@@ -217,20 +206,20 @@ class Osm2Dict:
                         if "name_1" in tagData:
                                 buildingName += tagData.get("name_1")
 
-                        node_ref = data[i].get("data").get("nd")
+                        node_ref = self.data[i].get("data").get("nd")
                         coords = np.array([])
 
-                        for j in range(len(data)):
+                        for j in range(len(self.data)):
 
-                            if "node" in data[j].get("type"):
+                            if "node" in self.data[j].get("type"):
 
-                                if data[j].get("data").get("id") in node_ref:
+                                if self.data[j].get("data").get("id") in node_ref:
 
                                     coords = np.append(coords,
-                                                       data[j].get("data")
+                                                       self.data[j].get("data")
                                                               .get("lon"))
                                     coords = np.append(coords,
-                                                       data[j].get("data")
+                                                       self.data[j].get("data")
                                                               .get("lat"))
                                     coords = np.reshape(coords,
                                                         (len(coords)/2, 2))
@@ -264,20 +253,20 @@ class Osm2Dict:
 
                         amenity = tagData.get("amenity")
 
-                        node_ref = data[i].get("data").get("nd")
+                        node_ref = self.data[i].get("data").get("nd")
                         coords = np.array([])
 
-                        for j in range(len(data)):
+                        for j in range(len(self.data)):
 
-                            if "node" in data[j].get("type"):
+                            if "node" in self.data[j].get("type"):
 
-                                if data[j].get("data").get("id") in node_ref:
+                                if self.data[j].get("data").get("id") in node_ref:
 
                                     coords = np.append(coords,
-                                                       data[j].get("data")
+                                                       self.data[j].get("data")
                                                               .get("lon"))
                                     coords = np.append(coords,
-                                                       data[j].get("data")
+                                                       self.data[j].get("data")
                                                               .get("lat"))
                                     coords = np.reshape(coords,
                                                         (len(coords)/2, 2))
