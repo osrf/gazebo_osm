@@ -11,9 +11,11 @@ class GetSDF:
         world.set('name', 'default')
         self.modelList = dict()
 
-    def addSphericalCoords(self, latVal, lonVal, elevationVal=0.0, headingVal=0):
+    def addSphericalCoords(self, latVal, lonVal,
+                           elevationVal=0.0, headingVal=0):
         ''' Add the spherical coordinates for the map'''
-        spherical_coordinates = Et.SubElement(self.sdf.find('world'), 'spherical_coordinates')
+        spherical_coordinates = Et.SubElement(self.sdf.find('world'),
+                                              'spherical_coordinates')
 
         model = Et.SubElement(spherical_coordinates, 'surface_model')
         model.text = "EARTH_WGS84"
@@ -49,7 +51,10 @@ class GetSDF:
         static.text = 'true'
 
         modelPose = Et.SubElement(includeModel, 'pose')
-        modelPose.text = str(pose[0]) + " " + str(pose[1]) + " " + str(pose[2]) + " 0 0 0"
+
+        modelPose.text = (str(pose[0]) +
+                          " " + str(pose[1]) +
+                          " " + str(pose[2]) + " 0 0 0")
 
     def addRoad(self, roadName):
         '''Add road to sdf file'''
@@ -60,7 +65,8 @@ class GetSDF:
         ''' Set the width of the road specified by the road name'''
         allRoads = self.sdf.find('world').findall('road')
 
-        roadWanted = [road for road in allRoads if road.get('name') == roadName]
+        roadWanted = [road for road in allRoads
+                      if road.get('name') == roadName]
 
         roadWidth = Et.SubElement(roadWanted[0], 'width')
         roadWidth.text = str(width)
@@ -68,9 +74,12 @@ class GetSDF:
     def addRoadPoint(self, point, roadName):
         '''Add points required to build a road, specified by the roadname'''
         allRoads = self.sdf.find('world').findall('road')
-        roadWanted = [road for road in allRoads if road.get('name') == roadName]
+        roadWanted = [road for road in allRoads
+                      if road.get('name') == roadName]
         roadPoint = Et.SubElement(roadWanted[0], 'point')
-        roadPoint.text = str(point[0]) + " " + str(point[1]) + " " + str(point[2])
+        roadPoint.text = (str(point[0]) +
+                          " " + str(point[1]) +
+                          " " + str(point[2]))
 
     def writeToFile(self, filename):
         '''Write sdf file'''

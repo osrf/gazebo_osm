@@ -1,87 +1,67 @@
 #!/usr/bin/env python
 import osmapi
 import numpy as np
-from getMapImage import getMapImage
 
 
 class Osm2Dict:
 
-    def __init__(self):
-        self.R = 6371
-        self.records = dict()
+    def __init__(self, latStart, lonStart,
+                 latStop, lonStop):
 
+        self.latStart = latStart
+        self.latStop = latStop
+        self.lonStart = lonStart
+        self.lonStop = lonStop
+
+        #Radius of the Earth
+        self.R = 6371
+
+        #Dictionaries to store results
+        self.records = dict()
         self.models = dict()
-        self.highwayWidthRelation = dict({"motorway": 4, "trunk": 3,
-                                         "primary": 1.5, "secondary": 0.8,
-                                         "tertiary": 0.42, "residential": 0.21})
+
+        self.highwayType = dict({"motorway": 4, "trunk": 3,
+                                 "primary": 1.5, "secondary": 0.8,
+                                 "tertiary": 0.42,
+                                 "residential": 0.21})
 
         self.modelType = ['highway', 'amenity', 'building', 'emergency']
 
-        self.addModel = dict({"stop": {"modelName": "stop_sign", "occurence": -1},
-                              "street_lamp": {"modelName": "lamp_post", "occurence": -1},
-                              "traffic_signals": {"modelName": "construction_cone", "occurence": -1},
-                              "fire hydrant": {"modelName": "fire_hydrant", "occurence": -1}})
+        self.addModel = dict({"stop": {"modelName": "stop_sign",
+                                       "occurence": -1},
+                              "street_lamp": {"modelName": "lamp_post",
+                                              "occurence": -1},
+                              "traffic_signals": {"modelName":
+                                                  "construction_cone",
+                                                  "occurence": -1},
+                              "fire hydrant": {"modelName": "fire_hydrant",
+                                               "occurence": -1}})
 
-        self.amenityList = dict({"school": {"modelName": "house_1", "occurence": -1},
-                                 "post_office": {'modelName': "office_building", 'occurence': -1},
-                                 "university": {'modelName': "house_2", 'occurence': -1},
-                                 "library": {'modelName': "house_2", 'occurence': -1},
-                                 "bar": {'modelName': "house_3", 'occurence': -1},
-                                 "cafe": {'modelName': "house_3", 'occurence': -1},
-                                 "pub": {'modelName': "house_3", 'occurence': -1},
-                                 "restaurant": {'modelName': "house_3", 'occurence': -1},
-                                 "fast_food": {'modelName': "house_3", 'occurence': -1},
-                                 "college": {'modelName': "house_2", 'occurence': -1},
-                                 "kindergarten": {'modelName': "house_2", 'occurence': -1},
-                                 "fuel": {'modelName': "gas_station", 'occurence': -1}})
-
-        while 1:
-            #get map coords
-            print("\nPlease enter the latitudnal and logitudnal" +
-                  "coordinates of the area or select from default by hitting return twice \n")
-
-            startCoords = raw_input("Enter starting coordinates: [lon lat] :").split(' ')
-            endCoords = raw_input("Enter ending coordnates: [lon lat]: ").split(' ')
-
-            if startCoords != [] and endCoords != [] and len(startCoords) == 2 and len(endCoords) == 2:
-
-                for incoords in range(2):
-
-                    startCoords[incoords] = float(startCoords[incoords])
-                    endCoords[incoords] = float(endCoords[incoords])
-
-            else:
-
-                choice = raw_input("Default Coordinate options: West El" +
-                                   "Camino Highway, CA (default), Bethlehem, PA (2): ")
-
-                if choice == '2':
-                    startCoords, endCoords = [40.61, -75.382], [40.608, -75.3714]
-
-                else:
-                    startCoords, endCoords = [37.385844, -122.101464], [37.395664, -122.083697]
-
-            option = raw_input("Do you want to view the area specified? [Y/N] (default: Y) ").upper()
-
-            if option == 'N':
-                break
-
-            getMapImage([min(startCoords[1], endCoords[1]),
-                         min(startCoords[0], endCoords[0]),
-                         max(startCoords[1], endCoords[1]),
-                         max(startCoords[0], endCoords[0])])
-
-            final_choice = raw_input("Do you want to continue (C) or select new coordinates (S)? (default:C)").upper()
-
-            if final_choice == 'S':
-                continue
-
-            break
-
-        self.latStart = startCoords[0]
-        self.lonStart = startCoords[1]
-        self.latStop = endCoords[0]
-        self.lonStop = endCoords[1]
+        self.amenityList = dict({"school": {"modelName": "house_1",
+                                            "occurence": -1},
+                                 "post_office": {'modelName':
+                                                 "office_building",
+                                                 'occurence': -1},
+                                 "university": {'modelName': "house_2",
+                                                'occurence': -1},
+                                 "library": {'modelName': "house_2",
+                                             'occurence': -1},
+                                 "bar": {'modelName': "house_3",
+                                         'occurence': -1},
+                                 "cafe": {'modelName': "house_3",
+                                          'occurence': -1},
+                                 "pub": {'modelName': "house_3",
+                                         'occurence': -1},
+                                 "restaurant": {'modelName': "house_3",
+                                                'occurence': -1},
+                                 "fast_food": {'modelName': "house_3",
+                                               'occurence': -1},
+                                 "college": {'modelName': "house_2",
+                                             'occurence': -1},
+                                 "kindergarten": {'modelName': "house_2",
+                                                  'occurence': -1},
+                                 "fuel": {'modelName': "gas_station",
+                                          'occurence': -1}})
 
     def latLonDist(self, coords):
         '''Input: latitude and longitude coordinates
@@ -123,7 +103,8 @@ class Osm2Dict:
 
             angle = np.append(angle, (np.arctan2(np.sin(dLon) * np.cos(lat2),
                                       np.cos(np.radians(self.latStart)) *
-                                      np.sin(lat2) - np.sin(np.radians(self.latStart)) *
+                                      np.sin(lat2) -
+                                      np.sin(np.radians(self.latStart)) *
                                       np.cos(lat2) * np.cos(dLon))))
         return angle
 
@@ -140,7 +121,8 @@ class Osm2Dict:
         return point
 
     def getMapDetails(self):
-        ''' Returns a list of highways with corresponding widhts and a list of all the models to be included'''
+        ''' Returns a list of highways with corresponding widths
+            and a list of all the models to be included'''
         #initialize the Open street api
         MyApi = osmapi.OsmApi()
         #Get the map data reqd
@@ -158,49 +140,75 @@ class Osm2Dict:
                 if tagData.get(modelNum) in self.addModel.keys():
                     modelType = tagData.get(modelNum)
 
-                    coords = np.array([data[i].get("data").get("lon"), data[i].get("data").get("lat")])
+                    coords = np.array([data[i].get("data").get("lon"),
+                                       data[i].get("data").get("lat")])
                     coords = np.reshape(coords, (len(coords)/2, 2))
+
                     modelLocation = self.getPoints(coords)
 
                     self.addModel[modelType]['occurence'] += 1
+
                     repNum = self.addModel[modelType]['occurence']
-                    self.models.update(dict({self.addModel[modelType]['modelName'] + "_" + str(repNum):
+
+                    self.models.update(dict({self.addModel
+                                             [modelType]['modelName'] +
+                                             "_" + str(repNum):
                                             {"points": modelLocation,
-                                             "mainModel": self.addModel[modelType]['modelName']}}))
+                                             "mainModel": self.addModel
+                                             [modelType]['modelName']}}))
 
             if "way" in data[i].get("type"):
                 if "highway" in tagData:
-                    highwayType = tagData.get("highway")
+                    typeHighway = tagData.get("highway")
 
-                    if highwayType in self.highwayWidthRelation.keys():
+                    if typeHighway in self.highwayType.keys():
 
                                 roadName = tagData.get("name")
 
                                 if roadName is None:
-                                    roadName = highwayType + "_" + str(data[i].get("data").get("id"))
+                                    roadName = (typeHighway +
+                                                "_" +
+                                                str(data[i].get("data")
+                                                           .get("id")))
                                 else:
-                                    roadName += "_" + str(data[i].get("data").get("id"))
+                                    roadName += "_" + str(data[i].get("data")
+                                                                 .get("id"))
 
                                 node_ref = data[i].get("data").get("nd")
                                 coords = np.array([])
-
                                 for j in range(len(data)):
 
                                     if "node" in data[j].get("type"):
 
-                                        if data[j].get("data").get("id") in node_ref:
-                                            coords = np.append(coords, data[j].get("data").get("lon"))
-                                            coords = np.append(coords, data[j].get("data").get("lat"))
-                                            coords = np.reshape(coords, (len(coords)/2, 2))
+                                        if (data[j].get("data")
+                                                   .get("id")) in node_ref:
+
+                                            coords = np.append(coords,
+                                                               data[j]
+                                                               .get("data")
+                                                               .get("lon"))
+                                            coords = np.append(coords,
+                                                               data[j]
+                                                               .get("data")
+                                                               .get("lat"))
+                                            coords = np.reshape(coords,
+                                                                (len(coords)/2,
+                                                                 2))
 
                                 pointsXYZ = self.getPoints(coords)
-
                                 #Sort points in X, Y, Z
-                                index = np.lexsort((pointsXYZ[0, :], pointsXYZ[1, :], pointsXYZ[2, :]))
+                                index = np.lexsort((pointsXYZ[0, :],
+                                                    pointsXYZ[1, :],
+                                                    pointsXYZ[2, :]))
+
                                 orderedPoints = pointsXYZ[:, index]
 
-                                self.records.update(dict({roadName: {'points': orderedPoints,
-                                                                     'width': self.highwayWidthRelation[highwayType]}}))
+                                self.records.update(dict({roadName:
+                                                         {'points':
+                                                          orderedPoints,
+                                                          'width':
+                                                          self.highwayType
+                                                          [typeHighway]}}))
                 elif "building" in tagData:
 
                     if tagData.get("building") == "yes":
@@ -214,32 +222,47 @@ class Osm2Dict:
 
                         for j in range(len(data)):
 
-                                    if "node" in data[j].get("type"):
+                            if "node" in data[j].get("type"):
 
-                                        if data[j].get("data").get("id") in node_ref:
+                                if data[j].get("data").get("id") in node_ref:
 
-                                            coords = np.append(coords, data[j].get("data").get("lon"))
-                                            coords = np.append(coords, data[j].get("data").get("lat"))
-                                            coords = np.reshape(coords, (len(coords)/2, 2))
+                                    coords = np.append(coords,
+                                                       data[j].get("data")
+                                                              .get("lon"))
+                                    coords = np.append(coords,
+                                                       data[j].get("data")
+                                                              .get("lat"))
+                                    coords = np.reshape(coords,
+                                                        (len(coords)/2, 2))
 
-                        if coords != [] and buildingName is not None:
-
+                        if coords.any() and buildingName is not None:
                             pointsXYZ = self.getPoints(coords)
+
                             #Sort points in X, Y, Z
-                            index = np.lexsort((pointsXYZ[0, :], pointsXYZ[1, :], pointsXYZ[2, :]))
+                            index = np.lexsort((pointsXYZ[0, :],
+                                                pointsXYZ[1, :],
+                                                pointsXYZ[2, :]))
+
                             orderedPoints = pointsXYZ[:, index]
 
-                            buildingLocation = np.array([[sum(orderedPoints[0, :])/len(orderedPoints[0, :])],
-                                                         [sum(orderedPoints[1, :])/len(orderedPoints[1, :])],
-                                                         [sum(orderedPoints[2, :])/len(orderedPoints[2, :])]])
+                            buildingLoc = np.array([[sum(orderedPoints[0, :]) /
+                                                     len(orderedPoints[0, :])],
+                                                    [sum(orderedPoints[1, :]) /
+                                                     len(orderedPoints[1, :])],
+                                                    [sum(orderedPoints[2, :]) /
+                                                     len(orderedPoints[2, :])]]
+                                                   )
 
-                            self.models.update(dict({buildingName: {"points": buildingLocation,
-                                                                    "mainModel": "office_building"}}))
+                            self.models.update(dict({buildingName:
+                                                    {"points":
+                                                     buildingLoc,
+                                                     "mainModel":
+                                                     "office_building"}}))
 
                 elif "amenity" in tagData:
                     if tagData.get("amenity") in self.amenityList.keys():
 
-                        amenityName = tagData.get("amenity")
+                        amenity = tagData.get("amenity")
 
                         node_ref = data[i].get("data").get("nd")
                         coords = np.array([])
@@ -250,26 +273,41 @@ class Osm2Dict:
 
                                 if data[j].get("data").get("id") in node_ref:
 
-                                    coords = np.append(coords, data[j].get("data").get("lon"))
-                                    coords = np.append(coords, data[j].get("data").get("lat"))
-                                    coords = np.reshape(coords, (len(coords)/2, 2))
+                                    coords = np.append(coords,
+                                                       data[j].get("data")
+                                                              .get("lon"))
+                                    coords = np.append(coords,
+                                                       data[j].get("data")
+                                                              .get("lat"))
+                                    coords = np.reshape(coords,
+                                                        (len(coords)/2, 2))
 
                         pointsXYZ = self.getPoints(coords)
 
                         #Sort points in X, Y, Z
-                        index = np.lexsort((pointsXYZ[0, :], pointsXYZ[1, :], pointsXYZ[2, :]))
+                        index = np.lexsort((pointsXYZ[0, :],
+                                            pointsXYZ[1, :],
+                                            pointsXYZ[2, :]))
+
                         orderedPoints = pointsXYZ[:, index]
 
-                        amenityLocation = np.array([[sum(orderedPoints[0, :])/len(orderedPoints[0, :])],
-                                                    [sum(orderedPoints[1, :])/len(orderedPoints[1, :])],
-                                                    [sum(orderedPoints[2, :])/len(orderedPoints[2, :])]])
+                        amenityLocation = np.array([[sum(orderedPoints[0, :]) /
+                                                     len(orderedPoints[0, :])],
+                                                    [sum(orderedPoints[1, :]) /
+                                                     len(orderedPoints[1, :])],
+                                                    [sum(orderedPoints[2, :]) /
+                                                     len(orderedPoints[2, :])]]
+                                                   )
 
-                        self.amenityList[amenityName]['occurence'] += 1
-                        repNum = self.amenityList[amenityName]['occurence']
+                        self.amenityList[amenity]['occurence'] += 1
+                        repNum = self.amenityList[amenity]['occurence']
 
-                        self.models.update(dict({amenityName + "_" + str(repNum):
+                        self.models.update(dict({amenity + "_" + str(repNum):
                                                 {"points": amenityLocation,
-                                                 "mainModel": self.amenityList[amenityName]['modelName']}}))
+                                                 "mainModel":
+                                                 self.amenityList[amenity]
+                                                                 ['modelName']
+                                                 }}))
         return self.records, self.models
 
     def getLat(self):
