@@ -7,7 +7,7 @@ except ImportError:
     HAS_MAPNIK = False
 
 
-def getMapImage(osmFile):
+def getMapImage(osmFile, map_output):
 
     if not HAS_MAPNIK:
         print ('Error: Mapnik module is missing. ' +
@@ -37,7 +37,6 @@ def getMapImage(osmFile):
                                        'color': 'black',
                                        'fontSize': 8}})
 
-    map_output = 'mymap.png'
     m = mapnik.Map(1024, 1024)
     m.background = mapnik.Color('white')
 
