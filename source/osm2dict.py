@@ -16,11 +16,15 @@ class Osm2Dict:
         self.records = dict()
         self.models = dict()
 
-        self.highwayType = dict({"motorway": 14, "trunk": 13,
-                                 "primary": 10, "secondary": 8,
-                                 "tertiary": 6,
-                                 "residential": 4,
-                                 "footway": 2})
+        self.highwayType = dict({"footway": 0.5, "cycleway": 0.5,
+                                 "path": 0.5, "pedestrian": 0.5,
+                                 "motorway": 14, "motorway_link": 13,
+                                 "trunk": 12, "trunk_link": 11,
+                                 "primary": 10, "primary_link": 9,
+                                 "secondary": 8, "secondary_link": 7,
+                                 "tertiary": 6, "tertiary_link": 5,
+                                 "residential": 4, "linving_street": 4,
+                                 "road": 5, "steps": 0.8})
 
         self.modelType = ['highway', 'amenity', 'building', 'emergency']
 
@@ -32,7 +36,15 @@ class Osm2Dict:
                                                   "construction_cone",
                                                   "occurence": -1},
                               "fire hydrant": {"modelName": "fire_hydrant",
-                                               "occurence": -1}})
+                                               "occurence": -1},
+                              "steps": {"modelName": "nist_stairs_120",
+                                        "occurence": -1},
+                              "give_way": {"modelName": "speed_limit",
+                                           "occurence": -1},
+                              "bus_stop": {"modelName":
+                                           "robocup14_spl_goal",
+                                           "occurence": -1}
+                              })
 
         self.amenityList = dict({"school": {"modelName": "house_1",
                                             "occurence": -1},
@@ -58,7 +70,11 @@ class Osm2Dict:
                                  "kindergarten": {'modelName': "house_2",
                                                   'occurence': -1},
                                  "fuel": {'modelName': "gas_station",
-                                          'occurence': -1}})
+                                          'occurence': -1},
+                                 "parking": {'modelName':
+                                             "drc_practice_angled_barrier_45",
+                                             'occurence': -1}
+                                 })
 
     def latLonDist(self, coords):
         '''Input: latitude and longitude coordinates
@@ -139,8 +155,30 @@ class Osm2Dict:
                 if tagData.get(modelNum) in self.addModel.keys():
                     modelType = tagData.get(modelNum)
 
-                    coords = np.array([self.data[i].get("data").get("lon"),
-                                       self.data[i].get("data").get("lat")])
+                    if modelType == 'steps':
+                        node_ref = self.data[i].get("data").get("nd")
+
+                        for j in range(len(self.data)):
+
+                            if "node" in self.data[j].get("type"):
+
+                                if ((self.data[j].get("data")
+                                                 .get("id"))
+                                   in node_ref):
+
+                                    coords = np.append(coords,
+                                                       self.data[j]
+                                                       .get("data")
+                                                       .get("lon"))
+                                    coords = np.append(coords,
+                                                       self.data[j]
+                                                       .get("data")
+                                                       .get("lat"))
+                    else:
+                        coords = np.array([self.data[i].get("data")
+                                                       .get("lon"),
+                                           self.data[i].get("data")
+                                                       .get("lat")])
                     coords = np.reshape(coords, (len(coords)/2, 2))
 
                     modelLocation = self.getPoints(coords)
@@ -199,13 +237,8 @@ class Osm2Dict:
                                 pointsXYZ = self.getPoints(coords)
 
                                 if pointsXYZ.any():
-                                    #Sort points in X, Y, Z
-                                    index = np.lexsort((pointsXYZ[0, :],
-                                                        pointsXYZ[1, :],
-                                                        pointsXYZ[2, :]))
-
-                                    location = pointsXYZ[:, index]
-
+                                    pointsXYZ.sort(axis=1)
+                                    location = pointsXYZ
                                     self.records.update(dict({roadName:
                                                              {'points':
                                                               location,
@@ -215,10 +248,15 @@ class Osm2Dict:
                 elif "building" in tagData:
 
                     if tagData.get("building") == "yes":
-                        buildingName = tagData.get("name")
-
+                        if "name" in tagData:
+                            buildingName = tagData.get("name")
+                        else:
+                            buildingName = ("office_building" +
+                                            "_" +
+                                            str(self.data[i].get("data")
+                                                            .get("id")))
                         if "name_1" in tagData:
-                                buildingName += tagData.get("name_1")
+                            buildingName += tagData.get("name_1")
 
                         node_ref = self.data[i].get("data").get("nd")
                         coords = np.array([])
@@ -242,12 +280,9 @@ class Osm2Dict:
                         if coords.any() and buildingName is not None:
                             pointsXYZ = self.getPoints(coords)
                             if pointsXYZ.any():
-                                #Sort points in X, Y, Z
-                                index = np.lexsort((pointsXYZ[0, :],
-                                                    pointsXYZ[1, :],
-                                                    pointsXYZ[2, :]))
 
-                                location = pointsXYZ[:, index]
+                                pointsXYZ.sort(axis=1)
+                                location = pointsXYZ
 
                                 buildingLoc = np.array([[sum(location[0, :]) /
                                                          len(location[0, :])],
@@ -290,12 +325,8 @@ class Osm2Dict:
                         pointsXYZ = self.getPoints(coords)
                         if pointsXYZ.any():
 
-                            #Sort points in X, Y, Z
-                            index = np.lexsort((pointsXYZ[0, :],
-                                                pointsXYZ[1, :],
-                                                pointsXYZ[2, :]))
-
-                            location = pointsXYZ[:, index]
+                            pointsXYZ.sort(axis=1)
+                            location = pointsXYZ
 
                             amenityLocation = np.array([[sum(location[0, :]) /
                                                          len(location[0, :])],

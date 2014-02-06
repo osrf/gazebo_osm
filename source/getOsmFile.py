@@ -2,7 +2,7 @@ import urllib2
 import osmapi
 
 
-def getOsmFile(box, filename):
+def getOsmFile(box, filename='map.png'):
 
     if not box:
         return None
@@ -23,7 +23,7 @@ def getOsmFile(box, filename):
     myapi = osmapi.OsmApi()
 
     dataDict = myapi.ParseOsm(osmRead.read())
-    
+
     osmRead.close()
 
     return dataDict

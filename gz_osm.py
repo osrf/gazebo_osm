@@ -26,7 +26,7 @@ parser.add_argument('-b', '--boundingbox',
                           'Format: MinLon MinLat MaxLon MaxLat'),
                     nargs='*',
                     type=float,
-                    default=[-75.382, 40.608, -75.377, 40.610])
+                    default=[-75.380, 40.606, -75.377, 40.609])
 
 args = parser.parse_args()
 
@@ -45,7 +45,7 @@ if args.imageFile:
 
 
 #Initialize the class
-osmRoads = Osm2Dict(args.boundingbox[0], args.boundingbox[1], osmDictionary)
+osmRoads = Osm2Dict(args.boundingbox[2], args.boundingbox[3], osmDictionary)
 
 #get Road and model details
 roadPointWidthMap, modelPoseMap = osmRoads.getMapDetails()

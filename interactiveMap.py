@@ -40,16 +40,15 @@ option = raw_input("Do you want to view the area specified? [Y/N]" +
 osmFile = 'map.osm'
 osmDictionary = {}
 
-getOsmFile([min(startCoords[1], endCoords[1]),
-            min(startCoords[0], endCoords[0]),
-            max(startCoords[1], endCoords[1]),
-            max(startCoords[0], endCoords[0])],
-           osmDictionary,
-           osmFile)
+osmDictionary = getOsmFile([min(startCoords[1], endCoords[1]),
+                            min(startCoords[0], endCoords[0]),
+                            max(startCoords[1], endCoords[1]),
+                            max(startCoords[0], endCoords[0])],
+                           osmFile)
 
 if option != 'N':
 
-    getMapImage(osmFile)
+    getMapImage(osmFile, 'map.png')
 
 
 #Initialize the class
