@@ -31,17 +31,16 @@ parser.add_argument('-b', '--boundingbox',
 args = parser.parse_args()
 
 args.osmFile = args.directory + args.osmFile
-args.imageFile = args.directory + args.imageFile
 args.outFile = args.directory + args.outFile
 
 osmDictionary = {}
 
-getOsmFile(args.boundingbox,
-           osmDictionary,
-           args.osmFile)
+osmDictionary = getOsmFile(args.boundingbox,
+                           args.osmFile)
 
 if args.imageFile:
 
+    args.imageFile = args.directory + args.imageFile
     getMapImage(args.osmFile, args.imageFile)
 
 

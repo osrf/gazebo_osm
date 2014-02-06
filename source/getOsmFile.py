@@ -2,31 +2,28 @@ import urllib2
 import osmapi
 
 
-def getOsmFile(box, dataDict, filename='map.osm'):
+def getOsmFile(box, filename):
 
     if not box:
-        return False
+        return None
 
-    dataDict.clear()
+    dataDict = {}
 
     osmFile = urllib2.urlopen('http://api.openstreetmap.org/api/0.6/map?bbox='
                               + str(box)[1:-1].replace(" ", ""))
 
-    osm = open('map.osm', 'w')
+    osm = open(filename, 'w')
 
     osm.write(osmFile.read())
 
     osm.close()
 
-    osmRead = open('map.osm', 'r')
+    osmRead = open(filename, 'r')
 
     myapi = osmapi.OsmApi()
 
     dataDict = myapi.ParseOsm(osmRead.read())
-
+    
     osmRead.close()
 
-    if dataDict:
-        return True
-    else:
-        return False
+    return dataDict

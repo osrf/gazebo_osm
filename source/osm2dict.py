@@ -16,10 +16,11 @@ class Osm2Dict:
         self.records = dict()
         self.models = dict()
 
-        self.highwayType = dict({"motorway": 4, "trunk": 3,
-                                 "primary": 1.5, "secondary": 0.8,
-                                 "tertiary": 0.42,
-                                 "residential": 0.21})
+        self.highwayType = dict({"motorway": 14, "trunk": 13,
+                                 "primary": 10, "secondary": 8,
+                                 "tertiary": 6,
+                                 "residential": 4,
+                                 "footway": 2})
 
         self.modelType = ['highway', 'amenity', 'building', 'emergency']
 
@@ -63,7 +64,7 @@ class Osm2Dict:
         '''Input: latitude and longitude coordinates
            Returns the distance made by given coordinates with
            the starting coordinates'''
-        if not coords:
+        if not coords.any():
             return 0
 
         distance = np.array([])
@@ -91,7 +92,7 @@ class Osm2Dict:
         '''Input: latitude and longitude coordinates
            Return the angle made by given coordinates with
            the starting coordinates'''
-        if not coords:
+        if not coords.any():
             return 0
 
         angle = np.array([])
@@ -113,7 +114,7 @@ class Osm2Dict:
     def getPoints(self, coords):
         '''Input : latitude and longitudnal coordinates
            Return the points in gazebo frame '''
-        if not coords:
+        if not coords.any():
             return []
 
         distance = self.latLonDist(coords)
@@ -197,7 +198,7 @@ class Osm2Dict:
 
                                 pointsXYZ = self.getPoints(coords)
 
-                                if pointsXYZ:
+                                if pointsXYZ.any():
                                     #Sort points in X, Y, Z
                                     index = np.lexsort((pointsXYZ[0, :],
                                                         pointsXYZ[1, :],
@@ -240,7 +241,7 @@ class Osm2Dict:
 
                         if coords.any() and buildingName is not None:
                             pointsXYZ = self.getPoints(coords)
-                            if pointsXYZ:
+                            if pointsXYZ.any():
                                 #Sort points in X, Y, Z
                                 index = np.lexsort((pointsXYZ[0, :],
                                                     pointsXYZ[1, :],
@@ -287,7 +288,7 @@ class Osm2Dict:
                                                         (len(coords)/2, 2))
 
                         pointsXYZ = self.getPoints(coords)
-                        if pointsXYZ:
+                        if pointsXYZ.any():
 
                             #Sort points in X, Y, Z
                             index = np.lexsort((pointsXYZ[0, :],
