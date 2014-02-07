@@ -2,8 +2,8 @@ This folder contains files for building osm_plugin for gazebo simulator.
 
 Dependencies:
 	Python 2.x
-	Python packages: elementtree, osmapi
-	(installation: pip install elementtree osmapi)
+	Python packages: elementtree
+	(installation: pip install elementtree)
 	Mapnik:
 	sudo apt-get install -y python-software-properties
         sudo add-apt-repository ppa:mapnik/v2.2.0
@@ -21,12 +21,40 @@ dict2sdf.py
 		set road width
 		add points to the road element
 
-example.py
-	A test file which outputs a sdf file ( set to "outFile.sdf" in example.py).
+getMapImage.py
+       Gets the image of the area required to be simulated.
+       
+getOsmFile.py
+       Downloads the osm database of the specified area.
+
+gz_osm.py
+       Command line compatible program which combine the functionality of all the above classes and functions to output the .sdf file for gazebo. 
+       usage: gz_osm.py [-h] [-f OUTFILE] [-o OSMFILE] [-m IMAGEFILE] [-d DIRECTORY]
+                        [-b [BOUNDINGBOX [BOUNDINGBOX ...]]]
+       
+       optional arguments:
+         -h, --help            show this help message and exit
+         -f OUTFILE, --outFile OUTFILE
+                               Output file name
+         -o OSMFILE, --osmFile OSMFILE
+                               Name of the osm file
+         -m IMAGEFILE, --imageFile IMAGEFILE
+                               Generate and name .png image of the selected areas
+         -d DIRECTORY, --directory DIRECTORY
+                               Output directory
+         -b [BOUNDINGBOX [BOUNDINGBOX ...]], --boundingbox [BOUNDINGBOX [BOUNDINGBOX ...]]
+                               Give the bounding box for the area Format: MinLon
+                               MinLat MaxLon MaxLat
+
+interactiveMap.py
+         interactive version of gz_osm.py
 
 Usage:
-	Run example.py file
-		python example.py
+	Run gz_osm.py file
+		$ python gz_osm.py 
+                or 
+                $ ./gz_osm.py
+
 	Output file: outFile.sdf
 
 	Check the file on gazebo
