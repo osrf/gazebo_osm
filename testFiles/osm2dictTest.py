@@ -11,30 +11,51 @@ class Osm2DictTest(unittest.TestCase):
 
     def setUp(self):
         self.osmDict = {}
-        getOsmFile([-75.93, 40.61, -75.90, 40.62], self.osmDict, 'map.osm')
-        self.testClass = Osm2Dict(0, 0, self.osmDict)
+        self.osmDict = getOsmFile([-75.38, 40.606, -75.377, 40.609], 'map.osm')
+        self.testClass = Osm2Dict(-75.93, 40.61, self.osmDict)
 
     def testDist(self):
-        self.assertEqual(round(self.testClass.latLonDist([[1, 1]]), 2), 157.25)
+        self.assertEqual(round(self.testClass.latLonDist(np.array([[-75.83, 41.61]])), 2), 111.51)
 
     def testDistEmpty(self):
-        self.assertEqual(self.testClass.latLonDist([]), 0)
+        self.assertEqual(self.testClass.latLonDist(np.array([])), 0)
 
     def testBearing(self):
-        self.assertEqual(round(self.testClass.latLongBearing([[1, 1]]), 2),
-                         0.79)
+        self.assertEqual(round(self.testClass.latLongBearing(np.array([[-75.83, 41.61]])), 2),
+                         0.07)
 
     def testBearingEmpty(self):
-        self.assertEqual(self.testClass.latLongBearing([]), 0)
+        self.assertEqual(self.testClass.latLongBearing(np.array([])), 0)
 
     def testPointsEmpty(self):
-        self.assertEqual(self.testClass.getPoints([]), [])
+        self.assertEqual(self.testClass.getPoints(np.array([])), [])
 
     def testPoints(self):
-        self.assertEqual(self.testClass.getPoints([[1, 1]]).all(),
+        self.assertEqual(self.testClass.getPoints(np.array([[-75.83, 41.61]])).all(),
                          np.array([[111200.57170516],
                                    [111183.63531948],
                                    [0.]]).all())
+
+    def testNumRoadsModels(self):
+        roadList, modelsList = self.testClass.getMapDetails()
+        self.assertEqual(len(roadList.keys()), 95)
+        self.assertEqual(len(modelsList.keys()), 40) 
+
+    def testSetGetFlags(self):
+        self.testClass.setFlags('m')
+        self.assertEqual(self.testClass.getFlags(), ['m'])
+
+    def testModels(self):
+        self.testClass.setFlags('m')
+        roadList, modelsList = self.testClass.getMapDetails()
+        self.assertEqual(len(roadList.keys()), 0)
+        self.assertEqual(len(modelsList.keys()), 40) 
+
+    def testRoads(self):
+        self.testClass.setFlags('r')
+        roadList, modelsList = self.testClass.getMapDetails()
+        self.assertEqual(len(roadList.keys()), 95)
+        self.assertEqual(len(modelsList.keys()), 0) 
 
 if __name__ == '__main__':
     unittest.main()
