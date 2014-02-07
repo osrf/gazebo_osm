@@ -147,34 +147,34 @@ class Osm2Dict:
         return point
 
     def latLonToPoints(self, node_ref):
-   
-       coords = np.array([])
-       for j in range(len(self.data)):
-    
-           if "node" in self.data[j].get("type"):
-    
-               if ((self.data[j].get("data")
-                                .get("id"))
-                  in node_ref):
-    
-                   coords = np.append(coords,
-                                      self.data[j]
-                                      .get("data")
-                                      .get("lon"))
-                   coords = np.append(coords,
-                                      self.data[j]
-                                      .get("data")
-                                      .get("lat"))
-                   coords = np.reshape(coords,
-                                       (len(coords)/2,
-                                        2))
-    
-       pointsXYZ = self.getPoints(coords)
-    
-       if pointsXYZ.any():
-           pointsXYZ.sort(axis=1)
 
-       return pointsXYZ
+        coords = np.array([])
+        for j in range(len(self.data)):
+
+            if "node" in self.data[j].get("type"):
+
+                if ((self.data[j].get("data")
+                                 .get("id"))
+                   in node_ref):
+
+                    coords = np.append(coords,
+                                       self.data[j]
+                                       .get("data")
+                                       .get("lon"))
+                    coords = np.append(coords,
+                                       self.data[j]
+                                       .get("data")
+                                       .get("lat"))
+                    coords = np.reshape(coords,
+                                        (len(coords)/2,
+                                         2))
+
+        pointsXYZ = self.getPoints(coords)
+
+        if pointsXYZ.any():
+            pointsXYZ.sort(axis=1)
+
+        return pointsXYZ
 
     def getRoadDetails(self):
         '''Returns a list of roads with corresponding widths'''
@@ -200,126 +200,126 @@ class Osm2Dict:
                                                               .get("id"))
 
                                 node_ref = self.data[i].get("data").get("nd")
-                                if node_ref:                                
+                                if node_ref:
                                     location = self.latLonToPoints(node_ref)
 
                                     self.records.update(dict({roadName:
                                                              {'points':
-                                                             location,
-                                                             'width':
-                                                             self.highwayType
-                                                             [typeHighway]}}))
+                                                              location,
+                                                              'width':
+                                                              self.highwayType
+                                                              [typeHighway]}}))
         return self.records
 
     def getModelDetails(self):
         '''Returns a list of models like buildings to be included
-           in the map'''
+            in the map'''
         for i in range(len(self.data)):
-           tagData = self.data[i].get("data").get("tag")
+            tagData = self.data[i].get("data").get("tag")
 
-           for modelNum in self.modelType:
+            for modelNum in self.modelType:
 
-               if tagData.get(modelNum) in self.addModel.keys():
-                   modelType = tagData.get(modelNum)
+                if tagData.get(modelNum) in self.addModel.keys():
+                    modelType = tagData.get(modelNum)
 
-                   if modelType == 'steps':
-                       node_ref = self.data[i].get("data").get("nd")
+                    if modelType == 'steps':
+                        node_ref = self.data[i].get("data").get("nd")
 
-                       for j in range(len(self.data)):
+                        for j in range(len(self.data)):
 
-                           if "node" in self.data[j].get("type"):
+                            if "node" in self.data[j].get("type"):
 
-                               if ((self.data[j].get("data")
-                                                .get("id"))
-                                  in node_ref):
+                                if ((self.data[j].get("data")
+                                                 .get("id"))
+                                   in node_ref):
 
-                                   coords = np.append(coords,
-                                                      self.data[j]
-                                                      .get("data")
-                                                      .get("lon"))
-                                   coords = np.append(coords,
-                                                      self.data[j]
-                                                      .get("data")
-                                                      .get("lat"))
-                   else:
-                       coords = np.array([self.data[i].get("data")
-                                                      .get("lon"),
-                                          self.data[i].get("data")
-                                                      .get("lat")])
-                   coords = np.reshape(coords, (len(coords)/2, 2))
+                                    coords = np.append(coords,
+                                                       self.data[j]
+                                                       .get("data")
+                                                       .get("lon"))
+                                    coords = np.append(coords,
+                                                       self.data[j]
+                                                       .get("data")
+                                                       .get("lat"))
+                    else:
+                        coords = np.array([self.data[i].get("data")
+                                                       .get("lon"),
+                                           self.data[i].get("data")
+                                                       .get("lat")])
+                    coords = np.reshape(coords, (len(coords)/2, 2))
 
-                   modelLocation = self.getPoints(coords)
+                    modelLocation = self.getPoints(coords)
 
-                   self.addModel[modelType]['occurence'] += 1
+                    self.addModel[modelType]['occurence'] += 1
 
-                   repNum = self.addModel[modelType]['occurence']
+                    repNum = self.addModel[modelType]['occurence']
 
-                   self.models.update(dict({self.addModel
-                                            [modelType]['modelName'] +
-                                            "_" + str(repNum):
-                                           {"points": modelLocation,
-                                            "mainModel": self.addModel
-                                            [modelType]['modelName']}}))
-               if "building" in tagData:
+                    self.models.update(dict({self.addModel
+                                             [modelType]['modelName'] +
+                                             "_" + str(repNum):
+                                            {"points": modelLocation,
+                                             "mainModel": self.addModel
+                                             [modelType]['modelName']}}))
+            if "building" in tagData:
 
-                   if tagData.get("building") == "yes":
-                       if "name" in tagData:
-                           buildingName = tagData.get("name")
-                       else:
-                           buildingName = ("office_building" +
-                                           "_" +
-                                           str(self.data[i].get("data")
-                                                           .get("id")))
-                       if "name_1" in tagData:
-                           buildingName += tagData.get("name_1")
+                if tagData.get("building") == "yes":
+                    if "name" in tagData:
+                        buildingName = tagData.get("name")
+                    else:
+                        buildingName = ("office_building" +
+                                        "_" +
+                                        str(self.data[i].get("data")
+                                                        .get("id")))
+                    if "name_1" in tagData:
+                        buildingName += tagData.get("name_1")
 
-                       node_ref = self.data[i].get("data").get("nd")
+                    node_ref = self.data[i].get("data").get("nd")
 
-                       if node_ref:
-                           location = self.latLonToPoints(node_ref)
-    
-                           buildingLoc = np.array([[sum(location[0, :]) /
-                                                    len(location[0, :])],
-                                                   [sum(location[1, :]) /
-                                                    len(location[1, :])],
-                                                   [sum(location[2, :]) /
-                                                    len(location[2, :])]]
-                                                  )
-    
-                           self.models.update(dict({buildingName:
-                                                   {"points":
-                                                    buildingLoc,
-                                                    "mainModel":
-                                                    "office_building"}}))
+                    if node_ref:
+                        location = self.latLonToPoints(node_ref)
 
-               elif "amenity" in tagData:
-                   if tagData.get("amenity") in self.amenityList.keys():
+                        buildingLoc = np.array([[sum(location[0, :]) /
+                                                 len(location[0, :])],
+                                                [sum(location[1, :]) /
+                                                 len(location[1, :])],
+                                                [sum(location[2, :]) /
+                                                 len(location[2, :])]]
+                                               )
 
-                       amenity = tagData.get("amenity")
+                        self.models.update(dict({buildingName:
+                                                {"points":
+                                                 buildingLoc,
+                                                 "mainModel":
+                                                 "office_building"}}))
 
-                       node_ref = self.data[i].get("data").get("nd")
-                       if node_ref:
-                           location = self.latLonToPoints(node_ref)
+            elif "amenity" in tagData:
+                if tagData.get("amenity") in self.amenityList.keys():
 
-                           amenityLocation = np.array([[sum(location[0, :]) /
-                                                        len(location[0, :])],
-                                                       [sum(location[1, :]) /
-                                                        len(location[1, :])],
-                                                       [sum(location[2, :]) /
-                                                        len(location[2, :])]]
-                                                      )
+                    amenity = tagData.get("amenity")
 
-                           self.amenityList[amenity]['occurence'] += 1
-                           repNum = self.amenityList[amenity]['occurence']
+                    node_ref = self.data[i].get("data").get("nd")
+                    if node_ref:
+                        location = self.latLonToPoints(node_ref)
 
-                           self.models.update(dict({amenity +
-                                                    "_" + str(repNum):
-                                                   {"points": amenityLocation,
-                                                    "mainModel":
-                                                    self.amenityList
-                                                    [amenity]
-                                                    ['modelName']
-                                                    }}))
+                        amenityLocation = np.array([[sum(location[0, :]) /
+                                                     len(location[0, :])],
+                                                    [sum(location[1, :]) /
+                                                     len(location[1, :])],
+                                                    [sum(location[2, :]) /
+                                                     len(location[2, :])]]
+                                                   )
+
+                        self.amenityList[amenity]['occurence'] += 1
+                        repNum = self.amenityList[amenity]['occurence']
+
+                        self.models.update(dict({amenity +
+                                                 "_" + str(repNum):
+                                                {"points": amenityLocation,
+                                                 "mainModel":
+                                                 self.amenityList
+                                                 [amenity]
+                                                 ['modelName']
+                                                 }}))
 
     def getMapDetails(self):
         ''' Returns a list of highways with corresponding widths
@@ -331,33 +331,39 @@ class Osm2Dict:
         return self.records, self.models
 
     def setFlags(self, addFlag):
-        if addFlag in ['a', 'm', 'r']:   
+
+        if addFlag in ['a', 'm', 'r']:
+
             if addFlag == 'a':
                 self.displayAll = True
+
             if addFlag == 'm':
                 self.displayModels = True
-                self.displayAll = False 
+                self.displayAll = False
+
             if addFlag == 'r':
                 self.displayRoads = True
                 self.displayAll = False
+
             return True
         else:
+
             print 'Error: Invalid flag! [Valid values : "a", "m", "r"]'
-            return False         
+            return False
 
     def getFlags(self):
-       flags = []
+        flags = []
 
-       if self.displayRoads:
-           flags.append('r')
+        if self.displayRoads:
+            flags.append('r')
 
-       if self.displayAll:
-           flags.append('a')
+        if self.displayAll:
+            flags.append('a')
 
-       if self.displayModels:
-           flags.append('m')
+        if self.displayModels:
+            flags.append('m')
 
-       return flags
+        return flags
 
     def getLat(self):
         '''Get the latitude of the start point'''

@@ -89,15 +89,3 @@ class GetSDF:
         outfile = open(filename, "w")
         outfile.write(prettyXml)
         outfile.close()
-
-
-def test():
-    p = GetSDF()
-    p.addSphericalCoords(37.85, -122.5)
-    p.addRoad("my_road")
-    p.setRoadWidth(7.34, "my_road")
-    p.addRoadPoint([0, 0, 0], "my_road")
-    p.addRoadPoint([100, 0, 0], "my_road")
-    p.addModel("stop_sign", "stop_sign_0", [1, 0, 1])
-    p.writeToFile("outclass.sdf")
-test()

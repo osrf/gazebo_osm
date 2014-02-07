@@ -11,7 +11,7 @@ Dependencies:
 
 	sudo apt-get install -y python-software-properties
 
-        sudo add-apt-repository ppa:mapnik/v2.2.0
+	sudo add-apt-repository ppa:mapnik/v2.2.0
 
 	sudo apt-get update
 

@@ -63,37 +63,39 @@ osmDictionary = {}
 
 if args.interactive:
     print("\nPlease enter the latitudnal and logitudnal" +
-      " coordinates of the area or select from" +
-      " default by hitting return twice \n")
+          " coordinates of the area or select from" +
+          " default by hitting return twice \n")
 
-    startCoords = raw_input("Enter starting coordinates: [lon lat] :").split(' ')
+    startCoords = raw_input("Enter starting coordinates: " +
+                            "[lon lat] :").split(' ')
     endCoords = raw_input("Enter ending coordnates: [lon lat]: ").split(' ')
 
-    if startCoords and endCoords and len(startCoords) == 2 and len(endCoords) == 2:
-    
+    if (startCoords and endCoords and
+            len(startCoords) == 2 and len(endCoords) == 2):
+
         for incoords in range(2):
-        
+
             startCoords[incoords] = float(startCoords[incoords])
             endCoords[incoords] = float(endCoords[incoords])
-    
+
     else:
-    
-        choice = raw_input("Default Coordinate options: West El" +
-        		   " Camino Highway, CA (default), Bethlehem, PA (2): ")
-        
+
+        choice = raw_input("Default Coordinate options: West El " +
+                           "Camino Highway, CA (default), Bethlehem, PA (2): ")
+
         if choice == '2':
             startCoords = [40.61, -75.382]
             endCoords = [40.608, -75.3714]
-        
+
         else:
             startCoords = [37.385844, -122.101464]
             endCoords = [37.395664, -122.083697]
-        
+
     option = raw_input("Do you want to view the area specified? [Y/N]" +
-    	       " (default: Y) ").upper()
-    
+                       " (default: Y): ").upper()
+
     osmFile = 'map.osm'
-    
+
     args.boundingbox = [min(startCoords[1], endCoords[1]),
                         min(startCoords[0], endCoords[0]),
                         max(startCoords[1], endCoords[1]),
@@ -103,7 +105,7 @@ if args.interactive:
         args.imageFile = 'map.png'
 
 osmDictionary = getOsmFile(args.boundingbox,
-                               args.osmFile)
+                           args.osmFile)
 
 if args.imageFile:
 
@@ -111,7 +113,8 @@ if args.imageFile:
     getMapImage(args.osmFile, args.imageFile)
 
 #Initialize the class
-osmRoads = Osm2Dict(args.boundingbox[0], args.boundingbox[1], osmDictionary, flags)
+osmRoads = Osm2Dict(args.boundingbox[0], args.boundingbox[1],
+                    osmDictionary, flags)
 
 #get Road and model details
 roadPointWidthMap, modelPoseMap = osmRoads.getMapDetails()
