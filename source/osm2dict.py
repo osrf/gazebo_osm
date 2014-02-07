@@ -137,7 +137,7 @@ class Osm2Dict:
         angles = self.latLongBearing(coords)
 
         point = np.array([distance*np.cos(angles)*1000,
-                          distance*np.sin(angles)*1000,
+                          -distance*np.sin(angles)*1000,
                           np.zeros(np.shape(distance))*1000])
 
         return point

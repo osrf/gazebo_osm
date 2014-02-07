@@ -35,7 +35,16 @@ def getMapImage(osmFile, map_output):
                                     'fontSize': 8},
                        "residential": {'width': 0.21,
                                        'color': 'black',
-                                       'fontSize': 8}})
+                                       'fontSize': 8},
+                       "living_street": {'width': 0.21,
+                                         'color': 'black',
+                                         'fontSize': 8},
+                       "pedestrian": {'width': 0.21,
+                                      'color': 'brown',
+                                      'fontSize': 8},
+                       "footway": {'width': 0.21,
+                                   'color': 'brown',
+                                   'fontSize': 8}})
 
     m = mapnik.Map(1024, 1024)
     m.background = mapnik.Color('white')
