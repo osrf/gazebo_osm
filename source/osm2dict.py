@@ -170,11 +170,9 @@ class Osm2Dict:
                                          2))
 
         pointsXYZ = self.getPoints(coords)
+        index = np.lexsort((pointsXYZ[0,:], pointsXYZ[1,:], pointsXYZ[2,:]))
 
-        if pointsXYZ.any():
-            pointsXYZ.sort(axis=1)
-
-        return pointsXYZ
+        return pointsXYZ[:, index]
 
     def getRoadDetails(self):
         '''Returns a list of roads with corresponding widths'''
