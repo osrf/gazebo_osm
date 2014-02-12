@@ -1,4 +1,14 @@
-import elementtree.ElementTree as Et
+##############################################################################
+#Author: Tashwin Khurana
+#Version: 1.0
+#Package: gazebo_osm
+#
+#Description: GetSDF() class
+#             Builds a sdf file by adding models and seting their properties,
+#             roads and sets spherical coordinates for the world
+##############################################################################
+
+import lxml.etree as Et
 import xml.dom.minidom as minidom
 
 
@@ -74,6 +84,7 @@ class GetSDF:
     def addRoadPoint(self, point, roadName):
         '''Add points required to build a road, specified by the roadname'''
         allRoads = self.sdf.find('world').findall('road')
+
         roadWanted = [road for road in allRoads
                       if road.get('name') == roadName]
         roadPoint = Et.SubElement(roadWanted[0], 'point')
@@ -83,9 +94,6 @@ class GetSDF:
 
     def writeToFile(self, filename):
         '''Write sdf file'''
-        roughXml = Et.tostring(self.sdf, 'utf-8')
-        reparsed = minidom.parseString(roughXml)
-        prettyXml = reparsed.toprettyxml(indent="\t")
         outfile = open(filename, "w")
-        outfile.write(prettyXml)
+        outfile.write(Et.tostring(self.sdf, pretty_print=True))
         outfile.close()

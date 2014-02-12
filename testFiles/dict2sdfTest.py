@@ -1,4 +1,14 @@
 #!/usr/bin/env python
+##############################################################################
+#Author: Tashwin Khurana
+#Version: 1.0
+#Package: gazebo_osm
+#
+#Description: Unit test for GetSDF() class
+#             Builds a sdf file by adding models and seting their properties,
+#             roads and sets spherical coordinates for the world
+##############################################################################
+
 import unittest
 from lxml import etree
 import os
@@ -13,6 +23,7 @@ from dict2sdf import GetSDF
 class GetSDFTest(unittest.TestCase):
 
     def setUp(self):
+        '''Build an sdf file from a known set of data'''
         osmDict = {}
         osmDict = getOsmFile([-75.93, 40.61, -75.90, 40.62], 'map.osm')
         osmRoads = Osm2Dict(-75.93, 40.61, osmDict)
@@ -48,6 +59,8 @@ class GetSDFTest(unittest.TestCase):
         sdfFile.writeToFile('outFile.sdf')
 
     def validateSchema(self):
+        '''function to test whether the output file
+           conforms to the defined schema'''
         try:
             with open('outFile.sdf', 'r') as f:
                 etree.fromstring(f.read(),
@@ -58,12 +71,16 @@ class GetSDFTest(unittest.TestCase):
             return False
 
     def gzCheck(self):
+        '''runs the gzsdf check command on the output file'''
         return os.system('gzsdf check outFile.sdf')
 
     def testXMLSchema(self):
+        '''tests whether the output file
+           conforms to the defined schema'''
         self.assertTrue(self.validateSchema())
 
     def testGzSDF(self):
+        '''tests the file usin the gzsdf check command'''
         self.assertEqual(self.gzCheck(), 0)
 
 

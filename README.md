@@ -1,11 +1,14 @@
-This folder contains files for building osm_plugin for gazebo simulator.
+Author: Tashwin Khurana
+
+Version: 1.0
+
+Description: Open Street Maps plugin for Gazebo
+             This folder contains files for building osm_plugin for gazebo simulator.
+
 
 Dependencies:
 
-	Python 2.x
-
-	Python packages: elementtree
-	(installation: pip install elementtree)
+	Python 2.7
 
 	Mapnik:
 
@@ -56,8 +59,11 @@ gz_osm.py
 	  -f OUTFILE, --outFile OUTFILE
 	                        Output file name
 
-	  -o OSMFILE, --osmFile OSMFILE
-	                        Name of the osm file
+          -o OSMFILE, --osmFile OSMFILE
+                        Name of the osm file generated
+
+          -O INPUTOSMFILE, --inputOsmFile INPUTOSMFILE
+                        Name of the Input osm file
 
 	  -i IMAGEFILE, --imageFile IMAGEFILE
 	                        Generate and name .png image of the selected areas
@@ -77,6 +83,11 @@ gz_osm.py
 
 	  --interactive         Starts the interactive version of the program
 
+
+Test files:
+
+Unit testing for each of the source files is provided in the testfiles/ folder.
+
 Usage:
 
 	Run gz_osm.py file
@@ -88,8 +99,7 @@ Usage:
                 $ ./gz_osm.py [-h] [-f OUTFILE] [-o OSMFILE] [-i IMAGEFILE] [-d DIRECTORY]
 	                 [-b [BOUNDINGBOX [BOUNDINGBOX ...]]] [-r] [-m] [-a][--interactive]
 	
-	Output file: outFile.sdf
+	Output file: outFile.sdf (default)
 
 	Check the file on gazebo
 		gazebo outFile.sdf
-

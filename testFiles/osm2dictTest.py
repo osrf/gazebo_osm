@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+##############################################################################
+#Author: Tashwin Khurana
+#Version: 1.0
+#Package: gazebo_osm
+#
+#Description: Unit test for Osm2Dict() class
+#             Output a list of roads and models that need to be simulated in
+#             the gazebo form the data it recives from the .osm file
+##############################################################################
+
 import numpy as np
 import unittest
 import sys
@@ -15,15 +26,19 @@ class Osm2DictTest(unittest.TestCase):
         self.testClass = Osm2Dict(-75.93, 40.61, self.osmDict)
 
     def testDist(self):
+        '''tests if latLonDist() function returns the correct bearing'''
         self.assertEqual(round(self
                                .testClass
                                .latLonDist(np.array([[-75.83, 41.61]])), 2),
                          111.51)
 
     def testDistEmpty(self):
+        '''tests if the latLonDist() returns 0 distance
+           if it recives an empty array'''
         self.assertEqual(self.testClass.latLonDist(np.array([])), 0)
 
     def testBearing(self):
+        '''tests if latLonBearing() function returns the correct bearing'''
         self.assertEqual(round(self
                                .testClass
                                .latLongBearing(np.array([[-75.83, 41.61]])),
@@ -31,12 +46,17 @@ class Osm2DictTest(unittest.TestCase):
                          0.07)
 
     def testBearingEmpty(self):
+        '''tests if the latLonBearing() returns 0 bearing
+           if it recives an empty array'''
         self.assertEqual(self.testClass.latLongBearing(np.array([])), 0)
 
     def testPointsEmpty(self):
+        '''tests if the getPoints() returns an empty list
+           if it recives the same'''
         self.assertEqual(self.testClass.getPoints(np.array([])), [])
 
     def testPoints(self):
+        '''tests the getPoints() function work'''
         self.assertEqual(self
                          .testClass
                          .getPoints(np.array([[-75.83, 41.61]])).all(),
@@ -45,21 +65,25 @@ class Osm2DictTest(unittest.TestCase):
                                    [0.]]).all())
 
     def testNumRoadsModels(self):
+        '''tests if the number of roads and models forund is correct'''
         roadList, modelsList = self.testClass.getMapDetails()
         self.assertEqual(len(roadList.keys()), 95)
-        self.assertEqual(len(modelsList.keys()), 40)
+        self.assertEqual(len(modelsList.keys()), 37)
 
     def testSetGetFlags(self):
+        '''tests if setFlags() and getFlags() methods work'''
         self.testClass.setFlags('m')
         self.assertEqual(self.testClass.getFlags(), ['m'])
 
     def testModels(self):
+        '''tests if the models only option works'''
         self.testClass.setFlags('m')
         roadList, modelsList = self.testClass.getMapDetails()
         self.assertEqual(len(roadList.keys()), 0)
-        self.assertEqual(len(modelsList.keys()), 40)
+        self.assertEqual(len(modelsList.keys()), 37)
 
     def testRoads(self):
+        '''tests if the roads only option works'''
         self.testClass.setFlags('r')
         roadList, modelsList = self.testClass.getMapDetails()
         self.assertEqual(len(roadList.keys()), 95)

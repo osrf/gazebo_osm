@@ -1,4 +1,13 @@
-#!/usr/bin/env python
+##############################################################################
+#Author: Tashwin Khurana
+#Version: 1.0
+#Package: gazebo_osm
+#
+#Description: Osm2Dict() class
+#             Output a list of roads and models that need to be simulated in
+#             the gazebo form the data it recives from the .osm file
+##############################################################################
+
 import numpy as np
 
 
@@ -20,6 +29,7 @@ class Osm2Dict:
         self.records = dict()
         self.models = dict()
 
+        #types of highways to be simulated
         self.highwayType = dict({"footway": 0.5, "cycleway": 0.5,
                                  "path": 0.5, "pedestrian": 0.5,
                                  "motorway": 14, "motorway_link": 13,
@@ -30,6 +40,8 @@ class Osm2Dict:
                                  "residential": 4, "linving_street": 4,
                                  "road": 5, "steps": 0.8})
 
+        #types of models and buildings to be simulated and a dictionary
+        #associating them with models in gazebo and their occurences
         self.modelType = ['highway', 'amenity', 'building', 'emergency']
 
         self.addModel = dict({"stop": {"modelName": "stop_sign",
@@ -108,7 +120,7 @@ class Osm2Dict:
 
         return distance
 
-    def latLongBearing(self, coords):
+    def latLonBearing(self, coords):
         '''Input: latitude and longitude coordinates
            Return the angle made by given coordinates with
            the starting coordinates'''
@@ -133,12 +145,13 @@ class Osm2Dict:
 
     def getPoints(self, coords):
         '''Input : latitude and longitudnal coordinates
-           Return the points in gazebo frame '''
+           Return the points in gazebo frame with respect
+           to the starting coordinates'''
         if not coords.any():
             return []
 
         distance = self.latLonDist(coords)
-        angles = self.latLongBearing(coords)
+        angles = self.latLonBearing(coords)
 
         point = np.array([distance*np.cos(angles) * 1000,
                           -distance*np.sin(angles) * 1000,
@@ -147,7 +160,8 @@ class Osm2Dict:
         return point
 
     def latLonToPoints(self, node_ref):
-
+        '''Pulls out the latitude and longitudes of the nodes in the
+           list of nodes and gets the points in the gazebo frame'''
         coords = np.array([])
         for j in range(len(self.data)):
 
@@ -170,7 +184,7 @@ class Osm2Dict:
                                          2))
 
         pointsXYZ = self.getPoints(coords)
-        index = np.lexsort((pointsXYZ[0,:], pointsXYZ[1,:], pointsXYZ[2,:]))
+        index = np.lexsort((pointsXYZ[0, :], pointsXYZ[1, :], pointsXYZ[2, :]))
 
         return pointsXYZ[:, index]
 
@@ -329,7 +343,7 @@ class Osm2Dict:
         return self.records, self.models
 
     def setFlags(self, addFlag):
-
+        '''sets the value for the list of flags'''
         if addFlag in ['a', 'm', 'r']:
 
             if addFlag == 'a':
@@ -350,6 +364,7 @@ class Osm2Dict:
             return False
 
     def getFlags(self):
+        '''Returns the list of flags activated'''
         flags = []
 
         if self.displayRoads:

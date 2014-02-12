@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import sys
 sys.path.insert(0, 'source')
+import os
+from lxml import etree
 import argparse
 from dict2sdf import GetSDF
 from osm2dict import Osm2Dict
@@ -11,8 +13,12 @@ from getOsmFile import getOsmFile
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--outFile',
                     help='Output file name', type=str, default='outFile.sdf')
-parser.add_argument('-o', '--osmFile', help='Name of the osm file', type=str,
+parser.add_argument('-o', '--osmFile', help='Name of the osm file generated',
+                    type=str,
                     default='map.osm')
+parser.add_argument('-O', '--inputOsmFile', help='Name of the Input osm file',
+                    type=str,
+                    default='')
 parser.add_argument('-i', '--imageFile',
                     help='Generate and name .png image of the selected areas',
                     type=str,
@@ -56,6 +62,9 @@ if args.roads:
 if not(args.roads) and not(args.models) or args.displayAll:
     flags.append('a')
 
+if not os.path.exists(args.directory):
+    os.makedirs(args.directory)
+
 args.osmFile = args.directory + args.osmFile
 args.outFile = args.directory + args.outFile
 
@@ -83,7 +92,7 @@ if args.interactive:
         choice = raw_input("Default Coordinate options: West El " +
                            "Camino Highway, CA (default), Bethlehem, PA (2): ")
 
-        if choice == '2':
+        if choice != '2':
             startCoords = [40.61, -75.382]
             endCoords = [40.608, -75.3714]
 
@@ -95,7 +104,6 @@ if args.interactive:
                        " (default: Y): ").upper()
 
     osmFile = 'map.osm'
-
     args.boundingbox = [min(startCoords[1], endCoords[1]),
                         min(startCoords[0], endCoords[0]),
                         max(startCoords[1], endCoords[1]),
@@ -104,8 +112,18 @@ if args.interactive:
     if option != 'N':
         args.imageFile = 'map.png'
 
+if args.inputOsmFile:
+    f = open(args.inputOsmFile, 'r')
+    root = etree.fromstring(f.read())
+    f.close()
+    args.boundingbox = [root[0].get('minlon'),
+                        root[0].get('minlat'),
+                        root[0].get('maxlon'),
+                        root[0].get('maxlat')]
+
 osmDictionary = getOsmFile(args.boundingbox,
-                           args.osmFile)
+                           args.osmFile, args.inputOsmFile)
+
 
 if args.imageFile:
 

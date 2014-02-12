@@ -1,4 +1,14 @@
-#!/usr/bin/env python2
+##############################################################################
+#Author: Tashwin Khurana
+#Version: 1.0
+#Package: gazebo_osm
+#
+#Description: getMapImage()
+#             Uses the data from .osm file to output an image of the area
+#             indicated in the .osm file and
+#             Stores it in file with the specified name(.png)
+##############################################################################
+
 import os
 try:
     import mapnik
@@ -8,6 +18,8 @@ except ImportError:
 
 
 def getMapImage(osmFile, map_output):
+    '''Uses the data from the osmFile to out a .png image
+       of the area depicted by the input file'''
 
     if not HAS_MAPNIK:
         print ('Error: Mapnik module is missing. ' +
@@ -94,4 +106,5 @@ def getMapImage(osmFile, map_output):
     m.layers.append(layer)
     m.zoom_all()
     mapnik.render_to_file(m, map_output, 'png')
+
     return os.system('xdg-open ' + map_output)
