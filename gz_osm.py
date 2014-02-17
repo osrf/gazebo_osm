@@ -90,7 +90,8 @@ if args.interactive:
     else:
 
         choice = raw_input("Default Coordinate options: West El " +
-                           "Camino Highway, CA (default), Bethlehem, PA (2): ")
+                           "Camino Real Highway, CA (2), Bethlehem," +
+                           " PA (default=1): ")
 
         if choice != '2':
             startCoords = [40.61, -75.382]
@@ -143,7 +144,6 @@ sdfFile = GetSDF()
 
 #Set up the spherical coordinates
 sdfFile.addSphericalCoords(osmRoads.getLat(), osmRoads.getLon())
-
 #add Required models
 sdfFile.includeModel("sun")
 

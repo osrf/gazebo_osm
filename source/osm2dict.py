@@ -30,15 +30,14 @@ class Osm2Dict:
         self.models = dict()
 
         #types of highways to be simulated
-        self.highwayType = dict({"footway": 0.5, "cycleway": 0.5,
-                                 "path": 0.5, "pedestrian": 0.5,
+        self.highwayType = dict({"footway": 0.3, 'pedestrian': 3,
                                  "motorway": 14, "motorway_link": 13,
                                  "trunk": 12, "trunk_link": 11,
                                  "primary": 10, "primary_link": 9,
                                  "secondary": 8, "secondary_link": 7,
                                  "tertiary": 6, "tertiary_link": 5,
-                                 "residential": 4, "linving_street": 4,
-                                 "road": 5, "steps": 0.8})
+                                 "residential": 3,
+                                 "steps": 0.8, "service": 0.3})
 
         #types of models and buildings to be simulated and a dictionary
         #associating them with models in gazebo and their occurences
@@ -53,8 +52,6 @@ class Osm2Dict:
                                                   "occurence": -1},
                               "fire hydrant": {"modelName": "fire_hydrant",
                                                "occurence": -1},
-                              "steps": {"modelName": "nist_stairs_120",
-                                        "occurence": -1},
                               "give_way": {"modelName": "speed_limit",
                                            "occurence": -1},
                               "bus_stop": {"modelName":
@@ -156,37 +153,33 @@ class Osm2Dict:
         point = np.array([distance*np.cos(angles) * 1000,
                           -distance*np.sin(angles) * 1000,
                           np.zeros(np.shape(distance))*1000])
-
         return point
 
     def latLonToPoints(self, node_ref):
         '''Pulls out the latitude and longitudes of the nodes in the
            list of nodes and gets the points in the gazebo frame'''
         coords = np.array([])
-        for j in range(len(self.data)):
+        for node in node_ref:
+            for j in range(len(self.data)):
 
-            if "node" in self.data[j].get("type"):
+                if "node" in self.data[j].get("type"):
 
-                if ((self.data[j].get("data")
-                                 .get("id"))
-                   in node_ref):
-
-                    coords = np.append(coords,
-                                       self.data[j]
-                                       .get("data")
-                                       .get("lon"))
-                    coords = np.append(coords,
-                                       self.data[j]
-                                       .get("data")
-                                       .get("lat"))
-                    coords = np.reshape(coords,
-                                        (len(coords)/2,
-                                         2))
+                    if ((self.data[j].get("data")
+                                     .get("id")) == node):
+                        coords = np.append(coords,
+                                           self.data[j]
+                                           .get("data")
+                                           .get("lon"))
+                        coords = np.append(coords,
+                                           self.data[j]
+                                           .get("data")
+                                           .get("lat"))
+                        coords = np.reshape(coords,
+                                            (len(coords)/2,
+                                             2))
 
         pointsXYZ = self.getPoints(coords)
-        index = np.lexsort((pointsXYZ[0, :], pointsXYZ[1, :], pointsXYZ[2, :]))
-
-        return pointsXYZ[:, index]
+        return pointsXYZ
 
     def getRoadDetails(self):
         '''Returns a list of roads with corresponding widths'''
@@ -234,30 +227,30 @@ class Osm2Dict:
                 if tagData.get(modelNum) in self.addModel.keys():
                     modelType = tagData.get(modelNum)
 
-                    if modelType == 'steps':
-                        node_ref = self.data[i].get("data").get("nd")
+ #                   if modelType == 'steps':
+ #                       node_ref = self.data[i].get("data").get("nd")
 
-                        for j in range(len(self.data)):
+ #                       for j in range(len(self.data)):
 
-                            if "node" in self.data[j].get("type"):
+ #                           if "node" in self.data[j].get("type"):
 
-                                if ((self.data[j].get("data")
-                                                 .get("id"))
-                                   in node_ref):
+ #                               if ((self.data[j].get("data")
+ #                                                .get("id"))
+ #                                  in node_ref):
 
-                                    coords = np.append(coords,
-                                                       self.data[j]
-                                                       .get("data")
-                                                       .get("lon"))
-                                    coords = np.append(coords,
-                                                       self.data[j]
-                                                       .get("data")
-                                                       .get("lat"))
-                    else:
-                        coords = np.array([self.data[i].get("data")
-                                                       .get("lon"),
-                                           self.data[i].get("data")
-                                                       .get("lat")])
+ #                                   coords = np.append(coords,
+ #                                                      self.data[j]
+ #                                                      .get("data")
+ #                                                      .get("lon"))
+ #                                   coords = np.append(coords,
+ #                                                      self.data[j]
+ #                                                      .get("data")
+ #                                                      .get("lat"))
+ #                   else:
+                    coords = np.array([self.data[i].get("data")
+                                                   .get("lon"),
+                                       self.data[i].get("data")
+                                                   .get("lat")])
                     coords = np.reshape(coords, (len(coords)/2, 2))
 
                     modelLocation = self.getPoints(coords)

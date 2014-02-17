@@ -23,10 +23,14 @@ def getOsmFile(box, outputFile='map.osm', inputOsmFile=''):
     if inputOsmFile:
         outputFile = inputOsmFile
     else:
-        osmFile = urllib2.urlopen('http://api.openstreetmap.org' +
-                                  '/api/0.6/map?bbox='
-                                  + str(box)[1:-1].replace(" ", ""))
-
+        try:
+            osmFile = urllib2.urlopen('http://api.openstreetmap.org' +
+                                      '/api/0.6/map?bbox='
+                                      + str(box)[1:-1].replace(" ", ""))
+        except urllib2.HTTPError:
+            print ("\nError:\tPlease check the bounding box input arguments"
+                   + "\n\tFormat: MinLon MinLat MaxLon MaxLat")
+            return {}
         osm = open(outputFile, 'w')
 
         osm.write(osmFile.read())

@@ -4,7 +4,7 @@
 #Version: 1.0
 #Package: gazebo_osm
 #
-#Description: 
+#Description:
 #            Program to test pep8 conformance for the files in the package
 ##############################################################################
 
