@@ -27,7 +27,7 @@ parser.add_argument('-d', '--directory',
                     help='Output directory',
                     type=str,
                     default='./')
-parser.add_argument('-b', '--boundingbox',
+parser.add_argument('-B', '--boundingbox',
                     help=('Give the bounding box for the area\n' +
                           'Format: MinLon MinLat MaxLon MaxLat'),
                     nargs='*',
@@ -39,7 +39,11 @@ parser.add_argument('-r', '--roads',
                     action='store_true')
 
 parser.add_argument('-m', '--models',
-                    help='Display models and building',
+                    help='Display models',
+                    action='store_true')
+
+parser.add_argument('-b', '--buildings',
+                    help='Display buildings',
                     action='store_true')
 
 parser.add_argument('-a', '--displayAll',
@@ -53,13 +57,16 @@ args = parser.parse_args()
 
 flags = []
 
+if args.buildings:
+    flags.append('b')
+
 if args.models:
     flags.append('m')
 
 if args.roads:
     flags.append('r')
 
-if not(args.roads) and not(args.models) or args.displayAll:
+if not(args.roads or args.models or args.buildings) or args.displayAll:
     flags.append('a')
 
 if not os.path.exists(args.directory):
@@ -136,7 +143,7 @@ osmRoads = Osm2Dict(args.boundingbox[0], args.boundingbox[1],
                     osmDictionary, flags)
 
 #get Road and model details
-roadPointWidthMap, modelPoseMap = osmRoads.getMapDetails()
+roadPointWidthMap, modelPoseMap, buildingLocationMap = osmRoads.getMapDetails()
 
 #Initialize the getSdf class
 sdfFile = GetSDF()
@@ -146,12 +153,17 @@ sdfFile = GetSDF()
 sdfFile.addSphericalCoords(osmRoads.getLat(), osmRoads.getLon())
 #add Required models
 sdfFile.includeModel("sun")
-
 for model in modelPoseMap.keys():
     points = modelPoseMap[model]['points']
     sdfFile.addModel(modelPoseMap[model]['mainModel'],
                      model,
                      [points[0, 0], points[1, 0], points[2, 0]])
+
+for building in buildingLocationMap.keys():
+    sdfFile.addBuilding(buildingLocationMap[building]['mean'],
+                        buildingLocationMap[building]['points'],
+                        building,
+                        buildingLocationMap[building]['color'])
 
 #Include the roads in the map in sdf file
 for road in roadPointWidthMap.keys():

@@ -21,6 +21,7 @@ class Osm2Dict:
         self.displayAll = 'a' in flags
         self.displayModels = 'm' in flags
         self.displayRoads = 'r' in flags
+        self.displayBuildings = "b" in flags
         self.flags = flags
         #Radius of the Earth
         self.R = 6371
@@ -28,7 +29,7 @@ class Osm2Dict:
         #Dictionaries to store results
         self.records = dict()
         self.models = dict()
-
+        self.buildings = dict()
         #types of highways to be simulated
         self.highwayType = dict({"footway": 0.3, 'pedestrian': 3,
                                  "motorway": 14, "motorway_link": 13,
@@ -37,7 +38,7 @@ class Osm2Dict:
                                  "secondary": 8, "secondary_link": 7,
                                  "tertiary": 6, "tertiary_link": 5,
                                  "residential": 3,
-                                 "steps": 0.8, "service": 0.3})
+                                 "steps": 0.8})
 
         #types of models and buildings to be simulated and a dictionary
         #associating them with models in gazebo and their occurences
@@ -56,37 +57,33 @@ class Osm2Dict:
                                            "occurence": -1},
                               "bus_stop": {"modelName":
                                            "robocup14_spl_goal",
-                                           "occurence": -1}
+                                           "occurence": -1},
+                              "fuel": {'modelName': "gas_station",
+                                       'occurence': -1}
                               })
 
-        self.amenityList = dict({"school": {"modelName": "house_1",
+        self.amenityList = dict({"school": {"color": "Purple",
                                             "occurence": -1},
-                                 "post_office": {'modelName':
-                                                 "office_building",
+                                 "post_office": {'color': 'Orange',
                                                  'occurence': -1},
-                                 "university": {'modelName': "house_2",
+                                 "university": {"color": "Purple",
                                                 'occurence': -1},
-                                 "library": {'modelName': "house_2",
+                                 "library": {"color": "Purple",
                                              'occurence': -1},
-                                 "bar": {'modelName': "house_3",
+                                 "bar": {"color": "Blue",
                                          'occurence': -1},
-                                 "cafe": {'modelName': "house_3",
+                                 "cafe": {'color': "Blue",
                                           'occurence': -1},
-                                 "pub": {'modelName': "house_3",
+                                 "pub": {"color": "Blue",
                                          'occurence': -1},
-                                 "restaurant": {'modelName': "house_3",
+                                 "restaurant": {"color": "Blue",
                                                 'occurence': -1},
-                                 "fast_food": {'modelName': "house_3",
+                                 "fast_food": {"color": "Blue",
                                                'occurence': -1},
-                                 "college": {'modelName': "house_2",
+                                 "college": {"color": "Purple",
                                              'occurence': -1},
-                                 "kindergarten": {'modelName': "house_2",
-                                                  'occurence': -1},
-                                 "fuel": {'modelName': "gas_station",
-                                          'occurence': -1},
-                                 "parking": {'modelName':
-                                             "drc_practice_angled_barrier_45",
-                                             'occurence': -1}
+                                 "kindergarten": {"color": "Purple",
+                                                  'occurence': -1}
                                  })
 
     def latLonDist(self, coords):
@@ -217,8 +214,7 @@ class Osm2Dict:
         return self.records
 
     def getModelDetails(self):
-        '''Returns a list of models like buildings to be included
-            in the map'''
+        '''Returns a list of models to be included in the map'''
         for i in range(len(self.data)):
             tagData = self.data[i].get("data").get("tag")
 
@@ -227,26 +223,6 @@ class Osm2Dict:
                 if tagData.get(modelNum) in self.addModel.keys():
                     modelType = tagData.get(modelNum)
 
- #                   if modelType == 'steps':
- #                       node_ref = self.data[i].get("data").get("nd")
-
- #                       for j in range(len(self.data)):
-
- #                           if "node" in self.data[j].get("type"):
-
- #                               if ((self.data[j].get("data")
- #                                                .get("id"))
- #                                  in node_ref):
-
- #                                   coords = np.append(coords,
- #                                                      self.data[j]
- #                                                      .get("data")
- #                                                      .get("lon"))
- #                                   coords = np.append(coords,
- #                                                      self.data[j]
- #                                                      .get("data")
- #                                                      .get("lat"))
- #                   else:
                     coords = np.array([self.data[i].get("data")
                                                    .get("lon"),
                                        self.data[i].get("data")
@@ -265,6 +241,11 @@ class Osm2Dict:
                                             {"points": modelLocation,
                                              "mainModel": self.addModel
                                              [modelType]['modelName']}}))
+
+    def getBuildingDetails(self):
+        '''Returns a list of buildings to be included in the map'''
+        for i in range(len(self.data)):
+            tagData = self.data[i].get("data").get("tag")
             if "building" in tagData:
 
                 if tagData.get("building") == "yes":
@@ -291,11 +272,11 @@ class Osm2Dict:
                                                  len(location[2, :])]]
                                                )
 
-                        self.models.update(dict({buildingName:
-                                                {"points":
-                                                 buildingLoc,
-                                                 "mainModel":
-                                                 "office_building"}}))
+                        self.buildings.update(dict({buildingName:
+                                                   {"mean":
+                                                    buildingLoc,
+                                                    "points": location,
+                                                    "color": "Red"}}))
 
             elif "amenity" in tagData:
                 if tagData.get("amenity") in self.amenityList.keys():
@@ -317,59 +298,69 @@ class Osm2Dict:
                         self.amenityList[amenity]['occurence'] += 1
                         repNum = self.amenityList[amenity]['occurence']
 
-                        self.models.update(dict({amenity +
-                                                 "_" + str(repNum):
-                                                {"points": amenityLocation,
-                                                 "mainModel":
-                                                 self.amenityList
-                                                 [amenity]
-                                                 ['modelName']
-                                                 }}))
+                        self.buildings.update(dict({amenity +
+                                                    "_" + str(repNum):
+                                                   {"mean": amenityLocation,
+                                                    "points": location,
+                                                    "color":
+                                                    self.amenityList[amenity]
+                                                    ['color']
+                                                    }}))
+            elif "service" in tagData:
+                if tagData.get("service") == "parking_aisle":
+                    node_ref = self.data[i].get("data").get("nd")
+                    if node_ref:
+                        location = self.latLonToPoints(node_ref)
+
+                        parkingLocation = np.array([[sum(location[0, :]) /
+                                                     len(location[0, :])],
+                                                    [sum(location[1, :]) /
+                                                     len(location[1, :])],
+                                                    [sum(location[2, :]) /
+                                                     len(location[2, :])]]
+                                                   )
+
+                        self.buildings.update(dict({"parking_aisle_" +
+                                                    str(self.data[i]
+                                                            .get("data")
+                                                            .get("id")):
+                                                   {"mean": parkingLocation,
+                                                    "points": location,
+                                                    "color": "Yellow"
+                                                    }}))
 
     def getMapDetails(self):
         ''' Returns a list of highways with corresponding widths
             and a list of all the models to be included'''
-        if self.displayAll or self.displayModels:
+        if 'm' in self.flags or 'a' in self.flags:
             self.getModelDetails()
-        if self.displayAll or self.displayRoads:
+
+        if 'b' in self.flags or 'a' in self.flags:
+            self.getBuildingDetails()
+
+        if 'r' in self.flags or 'a' in self.flags:
             self.getRoadDetails()
-        return self.records, self.models
+
+        return self.records, self.models, self.buildings
 
     def setFlags(self, addFlag):
         '''sets the value for the list of flags'''
-        if addFlag in ['a', 'm', 'r']:
-
-            if addFlag == 'a':
-                self.displayAll = True
-
-            if addFlag == 'm':
-                self.displayModels = True
-                self.displayAll = False
-
-            if addFlag == 'r':
-                self.displayRoads = True
-                self.displayAll = False
-
+        if addFlag in ['a', 'm', 'r', 'b']:
+            if addFlag not in self.flags:
+                if addFlag == 'a':
+                    self.flags.append(addFlag)
+                else:
+                    self.flags.append(addFlag)
+                    if 'a' in self.flags:
+                        self.flags.remove('a')
             return True
         else:
-
-            print 'Error: Invalid flag! [Valid values : "a", "m", "r"]'
+            print 'Error: Invalid flag! [Valid values : "a", "m", "r", "b"]'
             return False
 
     def getFlags(self):
         '''Returns the list of flags activated'''
-        flags = []
-
-        if self.displayRoads:
-            flags.append('r')
-
-        if self.displayAll:
-            flags.append('a')
-
-        if self.displayModels:
-            flags.append('m')
-
-        return flags
+        return self.flags
 
     def getLat(self):
         '''Get the latitude of the start point'''

@@ -10,6 +10,7 @@
 
 import lxml.etree as Et
 import xml.dom.minidom as minidom
+import numpy
 
 
 class GetSDF:
@@ -92,8 +93,62 @@ class GetSDF:
                           " " + str(point[1]) +
                           " " + str(point[2]))
 
+    def addBuilding(self, mean, pointList, building_name, color):
+        building = Et.SubElement(self.sdf.find('world'), 'model')
+        building.set('name', building_name)
+        static = Et.SubElement(building, 'static')
+        static.text = 'true'
+        mainPose = Et.SubElement(building, 'pose')
+        mainPose.text = (str(mean[0, 0]) +
+                         " " + str(mean[1, 0]) +
+                         " " + str(mean[2, 0]) +
+                         " 0 0 0")
+        arctan = numpy.arctan2
+        sqrt = numpy.sqrt
+        for point in range(0, numpy.size(pointList, 1)-1):
+
+            yaw = arctan((pointList[1, point] - pointList[1, point + 1]),
+                         (pointList[0, point] - pointList[0, point + 1]))
+
+            distance = sqrt(((pointList[1, point] -
+                              pointList[1, point + 1])**2 +
+                             (pointList[0, point] -
+                              pointList[0, point + 1])**2))
+
+            meanPoint = [(pointList[0, point] +
+                          pointList[0, point + 1])/2 - mean[0, 0],
+                         (pointList[1, point] +
+                          pointList[1, point + 1])/2 - mean[1, 0], 0]
+
+            link = Et.SubElement(building, 'link')
+            link.set('name', (building_name + '_' + str(point)))
+            collision = Et.SubElement(link, 'collision')
+            collision.set('name', (building_name + '_' + str(point)))
+
+            geometry = Et.SubElement(collision, 'geometry')
+            box = Et.SubElement(geometry, 'box')
+            Et.SubElement(box, 'size').text = str(distance) + ' 0.2 0'
+
+            visual = Et.SubElement(link, 'visual')
+            visual.set('name', (building_name + '_' + str(point)))
+
+            geometry = Et.SubElement(visual, 'geometry')
+            box = Et.SubElement(geometry, 'box')
+            Et.SubElement(box, 'size').text = str(distance) + ' 0.2 0'
+
+            material = Et.SubElement(visual, 'material')
+            script = Et.SubElement(material, 'script')
+            Et.SubElement(script, 'uri').text = ('file://media/materials/' +
+                                                 'scripts/gazebo.material')
+            Et.SubElement(script, 'name').text = 'Gazebo/' + color
+
+            Et.SubElement(link, 'pose').text = (str(meanPoint[0]) + ' ' +
+                                                str(meanPoint[1]) + ' 0 0 0 '
+                                                + str(yaw))
+
     def writeToFile(self, filename):
         '''Write sdf file'''
         outfile = open(filename, "w")
-        outfile.write(Et.tostring(self.sdf, pretty_print=True))
+        outfile.write(Et.tostring(self.sdf, pretty_print=True,
+                                  xml_declaration=True))
         outfile.close()
