@@ -322,9 +322,7 @@ class Osm2Dict:
                 if addFlag == 'a':
                     self.flags.append(addFlag)
                 else:
-                    self.flags.append(addFlag)
-                    if 'a' in self.flags:
-                        self.flags.remove('a')
+                    self.flags = [addFlag]
             return True
         else:
             print 'Error: Invalid flag! [Valid values : "a", "m", "r", "b"]'

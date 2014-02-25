@@ -27,7 +27,9 @@ class GetSDFTest(unittest.TestCase):
         osmDict = {}
         osmDict = getOsmFile([-75.93, 40.61, -75.90, 40.62], 'map.osm')
         osmRoads = Osm2Dict(-75.93, 40.61, osmDict)
-        roadPointWidthMap, modelPoseMap = osmRoads.getMapDetails()
+        (roadPointWidthMap,
+         modelPoseMap,
+         buildingLocationMap) = osmRoads.getMapDetails()
 
         #Initialize the getSdf class
         sdfFile = GetSDF()
@@ -44,6 +46,12 @@ class GetSDFTest(unittest.TestCase):
                              model,
                              [points[0, 0], points[1, 0], points[2, 0]])
 
+        for building in buildingLocationMap.keys():
+            sdfFile.addBuilding(buildingLocationMap[building]['mean'],
+                                buildingLocationMap[building]['points'],
+                                building,
+                                buildingLocationMap[building]['color'])
+
         #Include the roads in the map in sdf file
         for road in roadPointWidthMap.keys():
             sdfFile.addRoad(road)
@@ -54,7 +62,6 @@ class GetSDFTest(unittest.TestCase):
                                       points[1, point],
                                       points[2, point]],
                                      road)
-
         #output sdf File
         sdfFile.writeToFile('outFile.sdf')
 
