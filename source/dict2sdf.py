@@ -103,22 +103,24 @@ class GetSDF:
                          " " + str(mean[1, 0]) +
                          " " + str(mean[2, 0]) +
                          " 0 0 0")
-        arctan = numpy.arctan2
-        sqrt = numpy.sqrt
-        for point in range(0, numpy.size(pointList, 1)-1):
 
-            yaw = arctan((pointList[1, point] - pointList[1, point + 1]),
-                         (pointList[0, point] - pointList[0, point + 1]))
+        yaw = [numpy.arctan2((pointList[1, point] - pointList[1, point + 1]),
+                             (pointList[0, point] - pointList[0, point + 1]))
+               for point in range(numpy.size(pointList, 1)-1)]
 
-            distance = sqrt(((pointList[1, point] -
-                              pointList[1, point + 1])**2 +
-                             (pointList[0, point] -
-                              pointList[0, point + 1])**2))
+        distance = [numpy.sqrt(((pointList[1, point] -
+                                 pointList[1, point + 1])**2 +
+                                (pointList[0, point] -
+                                 pointList[0, point + 1])**2))
+                    for point in range(numpy.size(pointList, 1)-1)]
 
-            meanPoint = [(pointList[0, point] +
-                          pointList[0, point + 1])/2 - mean[0, 0],
-                         (pointList[1, point] +
-                          pointList[1, point + 1])/2 - mean[1, 0], 0]
+        meanPoint = [[(pointList[0, point] +
+                      pointList[0, point + 1])/2 - mean[0, 0],
+                     (pointList[1, point] +
+                      pointList[1, point + 1])/2 - mean[1, 0], 0]
+                     for point in range(numpy.size(pointList, 1)-1)]
+
+        for point in range(len(yaw)):
 
             link = Et.SubElement(building, 'link')
             link.set('name', (building_name + '_' + str(point)))
@@ -127,24 +129,25 @@ class GetSDF:
 
             geometry = Et.SubElement(collision, 'geometry')
             box = Et.SubElement(geometry, 'box')
-            Et.SubElement(box, 'size').text = str(distance) + ' 0.2 0'
+            Et.SubElement(box, 'size').text = str(distance[point]) + ' 0.2 0'
 
             visual = Et.SubElement(link, 'visual')
             visual.set('name', (building_name + '_' + str(point)))
 
             geometry = Et.SubElement(visual, 'geometry')
             box = Et.SubElement(geometry, 'box')
-            Et.SubElement(box, 'size').text = str(distance) + ' 0.2 0'
+            Et.SubElement(box, 'size').text = str(distance[point]) + ' 0.2 0'
 
             material = Et.SubElement(visual, 'material')
             script = Et.SubElement(material, 'script')
             Et.SubElement(script, 'uri').text = ('file://media/materials/' +
                                                  'scripts/gazebo.material')
             Et.SubElement(script, 'name').text = 'Gazebo/' + color
-
-            Et.SubElement(link, 'pose').text = (str(meanPoint[0]) + ' ' +
-                                                str(meanPoint[1]) + ' 0 0 0 '
-                                                + str(yaw))
+            Et.SubElement(link, 'pose').text = (str(meanPoint[point][0]) +
+                                                ' ' +
+                                                str(meanPoint[point][1]) +
+                                                ' 0 0 0 ' +
+                                                str(yaw[point]))
 
     def writeToFile(self, filename):
         '''Write sdf file'''

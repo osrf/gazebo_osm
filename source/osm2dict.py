@@ -86,56 +86,13 @@ class Osm2Dict:
                                                   'occurence': -1}
                                  })
 
-    def latLonDist(self, coords):
-        '''Input: latitude and longitude coordinates
-           Returns the distance made by given coordinates with
-           the starting coordinates'''
-        if not coords.any():
-            return 0
+        self.node = {data[i].get("data").get("id"): data[i].get('data')
+                     for i in range(len(data))
+                     if data[i].get("type") == "node"}
 
-        distance = np.array([])
-
-        for cordinate in range(len(coords)):
-
-            lon2 = np.radians(coords[cordinate][0])
-            lat2 = np.radians(coords[cordinate][1])
-
-            dLat = lat2-np.radians(self.latStart)
-            dLon = lon2-np.radians(self.lonStart)
-
-            a = (np.sin(dLat/2) * np.sin(dLat/2) +
-                 np.sin(dLon/2) * np.sin(dLon/2) *
-                 np.cos(np.radians(self.latStart)) *
-                 np.cos(lat2))
-
-            c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
-
-            distance = np.append(distance, self.R * c)
-
-        return distance
-
-    def latLonBearing(self, coords):
-        '''Input: latitude and longitude coordinates
-           Return the angle made by given coordinates with
-           the starting coordinates'''
-        if not coords.any():
-            return 0
-
-        angle = np.array([])
-        for i in range(len(coords)):
-
-            lon2 = np.radians(coords[i][0])
-            lat2 = np.radians(coords[i][1])
-
-            dLat = lat2-np.radians(self.latStart)
-            dLon = lon2-np.radians(self.lonStart)
-
-            angle = np.append(angle, (np.arctan2(np.sin(dLon) * np.cos(lat2),
-                                      np.cos(np.radians(self.latStart)) *
-                                      np.sin(lat2) -
-                                      np.sin(np.radians(self.latStart)) *
-                                      np.cos(lat2) * np.cos(dLon))))
-        return angle
+        self.ways = [data[i].get('data')
+                     for i in range(len(data))
+                     if data[i].get("type") == "way"]
 
     def getPoints(self, coords):
         '''Input : latitude and longitudnal coordinates
@@ -144,8 +101,26 @@ class Osm2Dict:
         if not coords.any():
             return []
 
-        distance = self.latLonDist(coords)
-        angles = self.latLonBearing(coords)
+        lon2 = np.radians(coords[:, 0])
+        lat2 = np.radians(coords[:, 1])
+
+        dLat = lat2-np.radians(self.latStart)
+        dLon = lon2-np.radians(self.lonStart)
+
+        a = (np.sin(dLat/2) * np.sin(dLat/2) +
+             np.sin(dLon/2) * np.sin(dLon/2) *
+             np.cos(np.radians(self.latStart)) *
+             np.cos(lat2))
+
+        c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
+
+        distance = self.R * c
+
+        angles = (np.arctan2(np.sin(dLon) * np.cos(lat2),
+                  np.cos(np.radians(self.latStart)) *
+                  np.sin(lat2) -
+                  np.sin(np.radians(self.latStart)) *
+                  np.cos(lat2) * np.cos(dLon)))
 
         point = np.array([distance*np.cos(angles) * 1000,
                           -distance*np.sin(angles) * 1000,
@@ -157,23 +132,16 @@ class Osm2Dict:
            list of nodes and gets the points in the gazebo frame'''
         coords = np.array([])
         for node in node_ref:
-            for j in range(len(self.data)):
 
-                if "node" in self.data[j].get("type"):
-
-                    if ((self.data[j].get("data")
-                                     .get("id")) == node):
-                        coords = np.append(coords,
-                                           self.data[j]
-                                           .get("data")
-                                           .get("lon"))
-                        coords = np.append(coords,
-                                           self.data[j]
-                                           .get("data")
-                                           .get("lat"))
-                        coords = np.reshape(coords,
-                                            (len(coords)/2,
-                                             2))
+            coords = np.append(coords,
+                               self.node[node]
+                               .get("lon"))
+            coords = np.append(coords,
+                               self.node[node]
+                               .get("lat"))
+            coords = np.reshape(coords,
+                                (len(coords)/2,
+                                 2))
 
         pointsXYZ = self.getPoints(coords)
         return pointsXYZ
@@ -181,90 +149,113 @@ class Osm2Dict:
     def getRoadDetails(self):
         '''Returns a list of roads with corresponding widths'''
          # get the road latitude and longitudes
-        for i in range(len(self.data)):
-            tagData = self.data[i].get("data").get("tag")
-            if "way" in self.data[i].get("type"):
-                if "highway" in tagData:
-                    typeHighway = tagData.get("highway")
+        for way in range(len(self.ways)):
+            tagData = self.ways[way].get("tag")
+            if "highway" in tagData:
+                typeHighway = tagData.get("highway")
 
-                    if typeHighway in self.highwayType.keys():
+                if typeHighway in self.highwayType.keys():
 
-                                roadName = tagData.get("name")
+                            roadName = tagData.get("name")
 
-                                if roadName is None:
-                                    roadName = (typeHighway +
-                                                "_" +
-                                                str(self.data[i].get("data")
-                                                                .get("id")))
-                                else:
-                                    roadName += "_" + str(self.data[i]
-                                                              .get("data")
-                                                              .get("id"))
+                            if roadName is None:
+                                roadName = (typeHighway +
+                                            "_" +
+                                            str(self.ways[way]
+                                                    .get("id")))
+                            else:
+                                roadName += "_" + str(self.ways[way]
+                                                          .get("id"))
 
-                                node_ref = self.data[i].get("data").get("nd")
-                                if node_ref:
-                                    location = self.latLonToPoints(node_ref)
+                            node_ref = self.ways[way].get("nd")
+                            if node_ref:
+                                location = self.latLonToPoints(node_ref)
 
-                                    self.records.update(dict({roadName:
-                                                             {'points':
-                                                              location,
-                                                              'width':
-                                                              self.highwayType
-                                                              [typeHighway]}}))
+                                self.records[roadName] = {'points':
+                                                          location,
+                                                          'width':
+                                                          self.highwayType
+                                                          [typeHighway]}
         return self.records
 
     def getModelDetails(self):
         '''Returns a list of models to be included in the map'''
-        for i in range(len(self.data)):
-            tagData = self.data[i].get("data").get("tag")
+        models = {element + "$" + str(i): self.data[i].get("data")
+                  for i in range(len(self.data))
+                  for element in self.addModel.keys()
+                  if element in self.data[i].get("data").get("tag").values()}
 
-            for modelNum in self.modelType:
+        for mName, data in models.iteritems():
+            modelType = mName.split("$")[0]
 
-                if tagData.get(modelNum) in self.addModel.keys():
-                    modelType = tagData.get(modelNum)
+            coords = np.array([data.get("lon"),
+                               data.get("lat")])
+            coords = np.reshape(coords, (len(coords)/2, 2))
 
-                    coords = np.array([self.data[i].get("data")
-                                                   .get("lon"),
-                                       self.data[i].get("data")
-                                                   .get("lat")])
-                    coords = np.reshape(coords, (len(coords)/2, 2))
+            modelLocation = self.getPoints(coords)
 
-                    modelLocation = self.getPoints(coords)
+            self.addModel[modelType]['occurence'] += 1
 
-                    self.addModel[modelType]['occurence'] += 1
+            repNum = self.addModel[modelType]['occurence']
 
-                    repNum = self.addModel[modelType]['occurence']
-
-                    self.models.update(dict({self.addModel
-                                             [modelType]['modelName'] +
-                                             "_" + str(repNum):
-                                            {"points": modelLocation,
-                                             "mainModel": self.addModel
-                                             [modelType]['modelName']}}))
+            self.models[self.addModel
+                        [modelType]
+                        ['modelName']
+                        + "_" +
+                        str(repNum)] = {"points": modelLocation,
+                                        "mainModel": self.addModel
+                                        [modelType]['modelName']}
 
     def getBuildingDetails(self):
         '''Returns a list of buildings to be included in the map'''
-        for i in range(len(self.data)):
-            tagData = self.data[i].get("data").get("tag")
-            if "building" in tagData:
+        building = [self.data[i].get("data")
+                    for i in range(len(self.data))
+                    if "building" in self.data[i].get("data").get("tag")]
 
-                if tagData.get("building") == "yes":
-                    if "name" in tagData:
-                        buildingName = tagData.get("name")
-                    else:
-                        buildingName = ("office_building" +
-                                        "_" +
-                                        str(self.data[i].get("data")
-                                                        .get("id")))
-                    if "name_1" in tagData:
-                        buildingName += tagData.get("name_1")
+        for element in building:
+            tagData = element.get("tag")
+            if "name" in tagData:
+                buildingName = tagData.get("name")
+            else:
+                buildingName = ("office_building" +
+                                "_" +
+                                str(element.get("id")))
+            if "name_1" in tagData:
+                buildingName += tagData.get("name_1")
 
-                    node_ref = self.data[i].get("data").get("nd")
+            node_ref = element.get("nd")
 
-                    if node_ref:
-                        location = self.latLonToPoints(node_ref)
+            if node_ref:
+                location = self.latLonToPoints(node_ref)
 
-                        buildingLoc = np.array([[sum(location[0, :]) /
+                buildingLoc = np.array([[sum(location[0, :]) /
+                                         len(location[0, :])],
+                                        [sum(location[1, :]) /
+                                         len(location[1, :])],
+                                        [sum(location[2, :]) /
+                                         len(location[2, :])]]
+                                       )
+
+                self.buildings[buildingName] = {"mean":
+                                                buildingLoc,
+                                                "points": location,
+                                                "color": "Red"}
+
+        amenity = [self.data[i].get("data")
+                   for i in range(len(self.data))
+                   if "amenity" in self.data[i].get("data").get("tag")]
+
+        for element in amenity:
+            tagData = element.get("tag")
+            if tagData.get("amenity") in self.amenityList.keys():
+
+                amenity = tagData.get("amenity")
+
+                node_ref = element.get("nd")
+                if node_ref:
+                    location = self.latLonToPoints(node_ref)
+
+                    amenityLocation = np.array([[sum(location[0, :]) /
                                                  len(location[0, :])],
                                                 [sum(location[1, :]) /
                                                  len(location[1, :])],
@@ -272,62 +263,43 @@ class Osm2Dict:
                                                  len(location[2, :])]]
                                                )
 
-                        self.buildings.update(dict({buildingName:
-                                                   {"mean":
-                                                    buildingLoc,
-                                                    "points": location,
-                                                    "color": "Red"}}))
+                    self.amenityList[amenity]['occurence'] += 1
+                    repNum = self.amenityList[amenity]['occurence']
 
-            elif "amenity" in tagData:
-                if tagData.get("amenity") in self.amenityList.keys():
+                    self.buildings[amenity +
+                                   "_" +
+                                   str(repNum)] = {"mean": amenityLocation,
+                                                   "points": location,
+                                                   "color":
+                                                   self.amenityList
+                                                   [amenity]
+                                                   ['color']
+                                                   }
+        service = [self.data[i].get("data")
+                   for i in range(len(self.data))
+                   if "service" in self.data[i].get("data").get("tag")]
 
-                    amenity = tagData.get("amenity")
+        for element in service:
+            if element.get("tag").get("service") == "parking_aisle":
+                node_ref = element.get("nd")
+                if node_ref:
+                    location = self.latLonToPoints(node_ref)
 
-                    node_ref = self.data[i].get("data").get("nd")
-                    if node_ref:
-                        location = self.latLonToPoints(node_ref)
+                    parkingLocation = np.array([[sum(location[0, :]) /
+                                                 len(location[0, :])],
+                                                [sum(location[1, :]) /
+                                                 len(location[1, :])],
+                                                [sum(location[2, :]) /
+                                                 len(location[2, :])]]
+                                               )
 
-                        amenityLocation = np.array([[sum(location[0, :]) /
-                                                     len(location[0, :])],
-                                                    [sum(location[1, :]) /
-                                                     len(location[1, :])],
-                                                    [sum(location[2, :]) /
-                                                     len(location[2, :])]]
-                                                   )
-
-                        self.amenityList[amenity]['occurence'] += 1
-                        repNum = self.amenityList[amenity]['occurence']
-
-                        self.buildings.update(dict({amenity +
-                                                    "_" + str(repNum):
-                                                   {"mean": amenityLocation,
-                                                    "points": location,
-                                                    "color":
-                                                    self.amenityList[amenity]
-                                                    ['color']
-                                                    }}))
-            elif "service" in tagData:
-                if tagData.get("service") == "parking_aisle":
-                    node_ref = self.data[i].get("data").get("nd")
-                    if node_ref:
-                        location = self.latLonToPoints(node_ref)
-
-                        parkingLocation = np.array([[sum(location[0, :]) /
-                                                     len(location[0, :])],
-                                                    [sum(location[1, :]) /
-                                                     len(location[1, :])],
-                                                    [sum(location[2, :]) /
-                                                     len(location[2, :])]]
-                                                   )
-
-                        self.buildings.update(dict({"parking_aisle_" +
-                                                    str(self.data[i]
-                                                            .get("data")
-                                                            .get("id")):
-                                                   {"mean": parkingLocation,
-                                                    "points": location,
-                                                    "color": "Yellow"
-                                                    }}))
+                    self.buildings["parking_aisle_" +
+                                   str(element
+                                       .get("id"))] = {"mean":
+                                                       parkingLocation,
+                                                       "points": location,
+                                                       "color": "Yellow"
+                                                       }
 
     def getMapDetails(self):
         ''' Returns a list of highways with corresponding widths
