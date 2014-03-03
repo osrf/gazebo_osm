@@ -9,6 +9,25 @@ from osm2dict import Osm2Dict
 from getMapImage import getMapImage
 from getOsmFile import getOsmFile
 
+TIMER = 1
+
+
+def tic():
+    #Homemade version of matlab tic and toc functions
+    import time
+    global startTime_for_tictoc
+    startTime_for_tictoc = time.time()
+
+
+def toc():
+    import time
+    if 'startTime_for_tictoc' in globals():
+        print ("Elapsed time is " + str(time.time()
+               - startTime_for_tictoc)
+               + " seconds.")
+    else:
+        print "Toc: start time not set"
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--outFile',
@@ -27,7 +46,7 @@ parser.add_argument('-d', '--directory',
                     help='Output directory',
                     type=str,
                     default='./')
-parser.add_argument('-b', '--boundingbox',
+parser.add_argument('-B', '--boundingbox',
                     help=('Give the bounding box for the area\n' +
                           'Format: MinLon MinLat MaxLon MaxLat'),
                     nargs='*',
@@ -39,7 +58,11 @@ parser.add_argument('-r', '--roads',
                     action='store_true')
 
 parser.add_argument('-m', '--models',
-                    help='Display models and building',
+                    help='Display models',
+                    action='store_true')
+
+parser.add_argument('-b', '--buildings',
+                    help='Display buildings',
                     action='store_true')
 
 parser.add_argument('-a', '--displayAll',
@@ -53,13 +76,16 @@ args = parser.parse_args()
 
 flags = []
 
+if args.buildings:
+    flags.append('b')
+
 if args.models:
     flags.append('m')
 
 if args.roads:
     flags.append('r')
 
-if not(args.roads) and not(args.models) or args.displayAll:
+if not(args.roads or args.models or args.buildings) or args.displayAll:
     flags.append('a')
 
 if not os.path.exists(args.directory):
@@ -90,7 +116,8 @@ if args.interactive:
     else:
 
         choice = raw_input("Default Coordinate options: West El " +
-                           "Camino Highway, CA (default), Bethlehem, PA (2): ")
+                           "Camino Real Highway, CA (2), Bethlehem," +
+                           " PA (default=1): ")
 
         if choice != '2':
             startCoords = [40.61, -75.382]
@@ -120,38 +147,56 @@ if args.inputOsmFile:
                         root[0].get('minlat'),
                         root[0].get('maxlon'),
                         root[0].get('maxlat')]
-
+if TIMER:
+    tic()
+print "Downloading the osm data ... "
 osmDictionary = getOsmFile(args.boundingbox,
                            args.osmFile, args.inputOsmFile)
-
+if TIMER:
+    toc()
 
 if args.imageFile:
-
+    if TIMER:
+        tic()
+    print "Building the image file ..."
     args.imageFile = args.directory + args.imageFile
     getMapImage(args.osmFile, args.imageFile)
+    if TIMER:
+        toc()
 
 #Initialize the class
+if TIMER:
+    tic()
 osmRoads = Osm2Dict(args.boundingbox[0], args.boundingbox[1],
                     osmDictionary, flags)
 
+print "Extracting the map data for gazebo ..."
 #get Road and model details
-roadPointWidthMap, modelPoseMap = osmRoads.getMapDetails()
-
+roadPointWidthMap, modelPoseMap, buildingLocationMap = osmRoads.getMapDetails()
+if TIMER:
+    toc()
+if TIMER:
+    tic()
+print "Building sdf file ..."
 #Initialize the getSdf class
 sdfFile = GetSDF()
 
 
 #Set up the spherical coordinates
 sdfFile.addSphericalCoords(osmRoads.getLat(), osmRoads.getLon())
-
 #add Required models
 sdfFile.includeModel("sun")
-
 for model in modelPoseMap.keys():
     points = modelPoseMap[model]['points']
     sdfFile.addModel(modelPoseMap[model]['mainModel'],
                      model,
                      [points[0, 0], points[1, 0], points[2, 0]])
+
+for building in buildingLocationMap.keys():
+    sdfFile.addBuilding(buildingLocationMap[building]['mean'],
+                        buildingLocationMap[building]['points'],
+                        building,
+                        buildingLocationMap[building]['color'])
 
 #Include the roads in the map in sdf file
 for road in roadPointWidthMap.keys():
@@ -166,3 +211,5 @@ for road in roadPointWidthMap.keys():
 
 #output sdf File
 sdfFile.writeToFile(args.outFile)
+if TIMER:
+    toc()

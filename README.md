@@ -1,10 +1,12 @@
-Author: Tashwin Khurana
-
-Version: 1.0
-
-Description: Open Street Maps plugin for Gazebo
-             This folder contains files for building osm_plugin for gazebo simulator.
-
+OSM Plug-in for Gazebo
+	
+	Author: Tashwin Khurana
+	
+	Version: 1.0
+	
+	Description: Open Street Maps plugin for Gazebo
+	             This folder contains files for building osm_plugin for gazebo simulator.
+	
 
 Dependencies:
 
@@ -49,40 +51,31 @@ gz_osm.py
 
        Command line compatible program which combine the functionality of all the above classes and functions to output the .sdf file for gazebo. 
 
-	usage: gz_osm.py [-h] [-f OUTFILE] [-o OSMFILE] [-i IMAGEFILE] [-d DIRECTORY]
-	                 [-b [BOUNDINGBOX [BOUNDINGBOX ...]]] [-r] [-m] [-a]
+	usage: gz_osm.py [-h] [-f OUTFILE] [-o OSMFILE] [-O INPUTOSMFILE]
+	                 [-i IMAGEFILE] [-d DIRECTORY]
+	                 [-B [BOUNDINGBOX [BOUNDINGBOX ...]]] [-r] [-m] [-b] [-a]
+	                 [--interactive]
 	
 	optional arguments:
-
 	  -h, --help            show this help message and exit
-
 	  -f OUTFILE, --outFile OUTFILE
 	                        Output file name
-
-          -o OSMFILE, --osmFile OSMFILE
-                        Name of the osm file generated
-
-          -O INPUTOSMFILE, --inputOsmFile INPUTOSMFILE
-                        Name of the Input osm file
-
+	  -o OSMFILE, --osmFile OSMFILE
+	                        Name of the osm file generated
+	  -O INPUTOSMFILE, --inputOsmFile INPUTOSMFILE
+	                        Name of the Input osm file
 	  -i IMAGEFILE, --imageFile IMAGEFILE
 	                        Generate and name .png image of the selected areas
-
 	  -d DIRECTORY, --directory DIRECTORY
 	                        Output directory
-
-	  -b [BOUNDINGBOX [BOUNDINGBOX ...]], --boundingbox [BOUNDINGBOX [BOUNDINGBOX ...]]
+	  -B [BOUNDINGBOX [BOUNDINGBOX ...]], --boundingbox [BOUNDINGBOX [BOUNDINGBOX ...]]
 	                        Give the bounding box for the area Format: MinLon
 	                        MinLat MaxLon MaxLat
-
 	  -r, --roads           Display Roads
-
-	  -m, --models          Display models and building
-
+	  -m, --models          Display models
+	  -b, --buildings       Display buildings
 	  -a, --displayAll      Display roads and models
-
 	  --interactive         Starts the interactive version of the program
-
 
 Test files:
 
@@ -97,7 +90,7 @@ Usage:
                 or 
 
                 $ ./gz_osm.py [-h] [-f OUTFILE] [-o OSMFILE] [-i IMAGEFILE] [-d DIRECTORY]
-	                 [-b [BOUNDINGBOX [BOUNDINGBOX ...]]] [-r] [-m] [-a][--interactive]
+	                 [-B [BOUNDINGBOX [BOUNDINGBOX ...]]] [-r] [-m] [-b] [-a][--interactive]
 	
 	Output file: outFile.sdf (default)
 

@@ -25,31 +25,6 @@ class Osm2DictTest(unittest.TestCase):
         self.osmDict = getOsmFile([-75.38, 40.606, -75.377, 40.609], 'map.osm')
         self.testClass = Osm2Dict(-75.93, 40.61, self.osmDict)
 
-    def testDist(self):
-        '''tests if latLonDist() function returns the correct bearing'''
-        self.assertEqual(round(self
-                               .testClass
-                               .latLonDist(np.array([[-75.83, 41.61]])), 2),
-                         111.51)
-
-    def testDistEmpty(self):
-        '''tests if the latLonDist() returns 0 distance
-           if it recives an empty array'''
-        self.assertEqual(self.testClass.latLonDist(np.array([])), 0)
-
-    def testBearing(self):
-        '''tests if latLonBearing() function returns the correct bearing'''
-        self.assertEqual(round(self
-                               .testClass
-                               .latLongBearing(np.array([[-75.83, 41.61]])),
-                               2),
-                         0.07)
-
-    def testBearingEmpty(self):
-        '''tests if the latLonBearing() returns 0 bearing
-           if it recives an empty array'''
-        self.assertEqual(self.testClass.latLongBearing(np.array([])), 0)
-
     def testPointsEmpty(self):
         '''tests if the getPoints() returns an empty list
            if it recives the same'''
@@ -66,9 +41,10 @@ class Osm2DictTest(unittest.TestCase):
 
     def testNumRoadsModels(self):
         '''tests if the number of roads and models forund is correct'''
-        roadList, modelsList = self.testClass.getMapDetails()
+        roadList, modelsList, buildingList = self.testClass.getMapDetails()
         self.assertEqual(len(roadList.keys()), 95)
-        self.assertEqual(len(modelsList.keys()), 37)
+        self.assertEqual(len(modelsList.keys()), 5)
+        self.assertEqual(len(buildingList.keys()), 23)
 
     def testSetGetFlags(self):
         '''tests if setFlags() and getFlags() methods work'''
@@ -78,16 +54,27 @@ class Osm2DictTest(unittest.TestCase):
     def testModels(self):
         '''tests if the models only option works'''
         self.testClass.setFlags('m')
-        roadList, modelsList = self.testClass.getMapDetails()
+        roadList, modelsList, buildingList = self.testClass.getMapDetails()
         self.assertEqual(len(roadList.keys()), 0)
-        self.assertEqual(len(modelsList.keys()), 37)
+        self.assertEqual(len(modelsList.keys()), 5)
+        self.assertEqual(len(buildingList.keys()), 0)
 
     def testRoads(self):
         '''tests if the roads only option works'''
         self.testClass.setFlags('r')
-        roadList, modelsList = self.testClass.getMapDetails()
+        roadList, modelsList, buildingList = self.testClass.getMapDetails()
         self.assertEqual(len(roadList.keys()), 95)
         self.assertEqual(len(modelsList.keys()), 0)
+        self.assertEqual(len(buildingList.keys()), 0)
+
+    def testBuildings(self):
+        '''tests if the roads only option works'''
+        self.testClass.setFlags('b')
+        roadList, modelsList, buildingList = self.testClass.getMapDetails()
+        self.assertEqual(len(roadList.keys()), 0)
+        self.assertEqual(len(modelsList.keys()), 0)
+        self.assertEqual(len(buildingList.keys()), 23)
+
 
 if __name__ == '__main__':
     unittest.main()
