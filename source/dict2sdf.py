@@ -9,7 +9,7 @@
 ##############################################################################
 
 import lxml.etree as Et
-import xml.dom.minidom as minidom
+#import xml.dom.minidom as minidom
 import numpy
 
 
@@ -67,10 +67,12 @@ class GetSDF:
                           " " + str(pose[1]) +
                           " " + str(pose[2]) + " 0 0 0")
 
-    def addRoad(self, roadName):
+    def addRoad(self, roadName, roadType):
         '''Add road to sdf file'''
         road = Et.SubElement(self.sdf.find('world'), 'road')
         road.set('name', roadName)
+        roadTexture = Et.SubElement(road, 'texture')
+        roadTexture.text = roadType
 
     def setRoadWidth(self, width, roadName):
         ''' Set the width of the road specified by the road name'''

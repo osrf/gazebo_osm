@@ -200,7 +200,7 @@ for building in buildingLocationMap.keys():
 
 #Include the roads in the map in sdf file
 for road in roadPointWidthMap.keys():
-    sdfFile.addRoad(road)
+    sdfFile.addRoad(road, roadPointWidthMap[road]['texture'])
     sdfFile.setRoadWidth(roadPointWidthMap[road]['width'], road)
     points = roadPointWidthMap[road]['points']
     for point in range(len(points[0, :])):
