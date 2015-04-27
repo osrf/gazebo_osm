@@ -175,7 +175,9 @@ class Osm2Dict:
                                                           location,
                                                           'width':
                                                           self.highwayType
-                                                          [typeHighway]}
+                                                          [typeHighway],
+                                                          'texture':
+                                                          typeHighway}
         return self.records
 
     def getModelDetails(self):

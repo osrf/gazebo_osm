@@ -143,10 +143,10 @@ if args.inputOsmFile:
     f = open(args.inputOsmFile, 'r')
     root = etree.fromstring(f.read())
     f.close()
-    args.boundingbox = [root[0].get('minlon'),
-                        root[0].get('minlat'),
-                        root[0].get('maxlon'),
-                        root[0].get('maxlat')]
+    args.boundingbox = [float(root[0].get('minlon')),
+                        float(root[0].get('minlat')),
+                        float(root[0].get('maxlon')),
+                        float(root[0].get('maxlat'))]
 if TIMER:
     tic()
 print "Downloading the osm data ... "
@@ -200,7 +200,7 @@ for building in buildingLocationMap.keys():
 
 #Include the roads in the map in sdf file
 for road in roadPointWidthMap.keys():
-    sdfFile.addRoad(road)
+    sdfFile.addRoad(road, roadPointWidthMap[road]['texture'])
     sdfFile.setRoadWidth(roadPointWidthMap[road]['width'], road)
     points = roadPointWidthMap[road]['points']
     for point in range(len(points[0, :])):
