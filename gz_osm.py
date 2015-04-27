@@ -143,10 +143,10 @@ if args.inputOsmFile:
     f = open(args.inputOsmFile, 'r')
     root = etree.fromstring(f.read())
     f.close()
-    args.boundingbox = [root[0].get('minlon'),
-                        root[0].get('minlat'),
-                        root[0].get('maxlon'),
-                        root[0].get('maxlat')]
+    args.boundingbox = [float(root[0].get('minlon')),
+                        float(root[0].get('minlat')),
+                        float(root[0].get('maxlon')),
+                        float(root[0].get('maxlat'))]
 if TIMER:
     tic()
 print "Downloading the osm data ... "
