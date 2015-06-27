@@ -51,7 +51,7 @@ parser.add_argument('-B', '--boundingbox',
                           'Format: MinLon MinLat MaxLon MaxLat'),
                     nargs='*',
                     type=float,
-                    default=[-75.380, 40.606, -75.377, 40.609])
+                    default=[-122.0129, 37.3596, -122.0102, 37.3614])
 
 parser.add_argument('-r', '--roads',
                     help='Display Roads',
@@ -119,13 +119,13 @@ if args.interactive:
                            "Camino Real Highway, CA (2), Bethlehem," +
                            " PA (default=1): ")
 
-        if choice != '2':
-            startCoords = [37.35503, -122.00954]
-            endCoords = [37.35807, -122.00557]
+        # if choice != '2': 
+        #     startCoords = [37.3566, -122.0091]
+        #     endCoords = [37.3574, -122.0081]
 
-        else:
-            startCoords = [37.35503, -122.00954]
-            endCoords = [37.35807, -122.00557]
+        # else:
+        startCoords = [37.3596, -122.0129]
+        endCoords = [37.3614, -122.0102]
 
     option = raw_input("Do you want to view the area specified? [Y/N]" +
                        " (default: Y): ").upper()
@@ -168,6 +168,7 @@ if args.imageFile:
 if TIMER:
     tic()
 osmRoads = Osm2Dict(args.boundingbox[0], args.boundingbox[1],
+                    args.boundingbox[2], args.boundingbox[3],
                     osmDictionary, flags)
 
 print "Extracting the map data for gazebo ..."
@@ -185,6 +186,9 @@ sdfFile = GetSDF()
 
 #Set up the spherical coordinates
 sdfFile.addSphericalCoords(osmRoads.getLat(), osmRoads.getLon())
+print ('Lat Center: '+ str(osmRoads.getLat()))
+print ('Lon Center: '+ str(osmRoads.getLon()))
+
 #add Required models
 sdfFile.includeModel("sun")
 # for model in modelPoseMap.keys():

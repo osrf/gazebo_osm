@@ -13,10 +13,12 @@ import numpy as np
 
 class Osm2Dict:
 
-    def __init__(self, lonStart, latStart, data, flags=['a']):
+    def __init__(self, lonStart, latStart, lonEnd, latEnd, data, flags=['a']):
 
         self.latStart = latStart
         self.lonStart = lonStart
+        self.latEnd = latEnd
+        self.lonEnd = lonEnd
         self.data = data
         self.displayAll = 'a' in flags
         self.displayModels = 'm' in flags
@@ -104,27 +106,45 @@ class Osm2Dict:
         lon2 = np.radians(coords[:, 0])
         lat2 = np.radians(coords[:, 1])
 
-        dLat = lat2-np.radians(self.latStart)
-        dLon = lon2-np.radians(self.lonStart)
+        print ('Lon2: ' + str(lon2))
+        print ('Lon : ' + str(np.radians(self.lonStart)))
+        print ('Lat2: ' + str(lat2))
+        print ('Lat : ' + str(np.radians(self.latStart)))
 
+        # dLat = lat2-np.radians(self.latStart)
+        # dLon = lon2-np.radians(self.lonStart)
+        dLat = lat2-np.radians(self.getLat())
+        dLon = lon2-np.radians(self.getLon())
+
+
+        # a = (np.sin(dLat/2) * np.sin(dLat/2) +
+        #      np.sin(dLon/2) * np.sin(dLon/2) *
+        #      np.cos(np.radians(self.latStart)) *
+        #      np.cos(lat2))
         a = (np.sin(dLat/2) * np.sin(dLat/2) +
              np.sin(dLon/2) * np.sin(dLon/2) *
-             np.cos(np.radians(self.latStart)) *
+             np.cos(np.radians(self.getLat())) *
              np.cos(lat2))
+
 
         c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
 
         distance = self.R * c
 
+        # angles = (np.arctan2(np.sin(dLon) * np.cos(lat2),
+        #           np.cos(np.radians(self.latStart)) *
+        #           np.sin(lat2) -
+        #           np.sin(np.radians(self.latStart)) *
+        #           np.cos(lat2) * np.cos(dLon)))
         angles = (np.arctan2(np.sin(dLon) * np.cos(lat2),
-                  np.cos(np.radians(self.latStart)) *
+                  np.cos(np.radians(self.getLat())) *
                   np.sin(lat2) -
-                  np.sin(np.radians(self.latStart)) *
+                  np.sin(np.radians(self.getLat())) *
                   np.cos(lat2) * np.cos(dLon)))
-
         point = np.array([distance*np.cos(angles) * 1000,
                           -distance*np.sin(angles) * 1000,
                           np.zeros(np.shape(distance))*1000])
+        
         return point
 
     def latLonToPoints(self, node_ref):
@@ -336,8 +356,14 @@ class Osm2Dict:
 
     def getLat(self):
         '''Get the latitude of the start point'''
-        return self.latStart
+        latRegionCenter = np.median([self.latStart, self.latEnd])
+        #print ('Lat Center: ' + str(latRegionCenter)) 
+
+        return latRegionCenter
 
     def getLon(self):
         '''Get the longitude of the start point'''
-        return self.lonStart
+        longRegionCenter = np.median([self.lonStart, self.lonEnd])
+        #print ('Lat Center: ' + str(longRegionCenter) 
+
+        return longRegionCenter
