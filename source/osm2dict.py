@@ -103,20 +103,24 @@ class Osm2Dict:
         if not coords.any():
             return []
 
+        print ('Degrees Lon: ' + str(coords[:, 0]))
+        print ('Degrees Lat: ' + str(coords[:, 1]))
+
+
         lon2 = np.radians(coords[:, 0])
         lat2 = np.radians(coords[:, 1])
 
-        print ('Lon2: ' + str(lon2))
-        print ('Lon : ' + str(np.radians(self.lonStart)))
-        print ('Lat2: ' + str(lat2))
-        print ('Lat : ' + str(np.radians(self.latStart)))
+        # print ('Lon2: ' + str(lon2))
+        # print ('Lon : ' + str(np.radians(self.lonStart)))
+        # print ('Lat2: ' + str(lat2))
+        # print ('Lat : ' + str(np.radians(self.latStart)))
 
         # dLat = lat2-np.radians(self.latStart)
         # dLon = lon2-np.radians(self.lonStart)
         dLat = lat2-np.radians(self.getLat())
         dLon = lon2-np.radians(self.getLon())
 
-
+        ## no idea what this letter a is
         # a = (np.sin(dLat/2) * np.sin(dLat/2) +
         #      np.sin(dLon/2) * np.sin(dLon/2) *
         #      np.cos(np.radians(self.latStart)) *
@@ -126,7 +130,7 @@ class Osm2Dict:
              np.cos(np.radians(self.getLat())) *
              np.cos(lat2))
 
-
+        ## no idea what this letter c is
         c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
 
         distance = self.R * c
@@ -144,7 +148,7 @@ class Osm2Dict:
         point = np.array([distance*np.cos(angles) * 1000,
                           -distance*np.sin(angles) * 1000,
                           np.zeros(np.shape(distance))*1000])
-        
+
         return point
 
     def latLonToPoints(self, node_ref):
@@ -153,18 +157,32 @@ class Osm2Dict:
         coords = np.array([])
         for node in node_ref:
 
-            coords = np.append(coords,
-                               self.node[node]
-                               .get("lon"))
-            coords = np.append(coords,
-                               self.node[node]
-                               .get("lat"))
-            coords = np.reshape(coords,
-                                (len(coords)/2,
-                                 2))
+            if self.checkCoordinateBoundaries(node):
+                coords = np.append(coords,
+                                   self.node[node]
+                                   .get("lon"))
+                coords = np.append(coords,
+                                   self.node[node]
+                                   .get("lat"))
+                coords = np.reshape(coords,
+                                    (len(coords)/2,
+                                     2))
 
         pointsXYZ = self.getPoints(coords)
         return pointsXYZ
+
+    ## Check if node lat/long is in exported bounds
+    def checkCoordinateBoundaries(self, node_data):
+        if self.lonStart <= self.node[node_data].get("lon") <= self.lonEnd:
+            if self.latStart <= self.node[node_data].get("lat") <= self.latEnd:
+                return True
+            else:
+                print ('Lat Coordinate not in bounds: ' + str(self.node[node_data].get("lat")))
+                return False
+        else:
+            print ('Lon Coordinate not in bounds: ' + str(self.node[node_data].get("lon")))
+            return False
+
 
     def getRoadDetails(self):
         '''Returns a list of roads with corresponding widths'''
