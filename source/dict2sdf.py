@@ -71,8 +71,17 @@ class GetSDF:
         '''Add road to sdf file'''
         road = Et.SubElement(self.sdf.find('world'), 'road')
         road.set('name', roadName)
-        roadTexture = Et.SubElement(road, 'texture')
-        roadTexture.text = roadType
+        roadMaterial = Et.SubElement(road, 'material')
+        script = Et.SubElement(roadMaterial, 'script')
+        Et.SubElement(script, 'uri').text = ('file://media/materials/' +
+                                                 'scripts/gazebo.material')
+        Et.SubElement(script, 'name').text = 'Gazebo/Grey'
+
+    # Adds little box to display location of osm gps point in world
+    def addRoadDebug(self, pose, roadName):
+
+        boxModel = self.addModel('wood_cube_2_5cm', roadName + '_debug', pose)
+
 
     def setRoadWidth(self, width, roadName):
         ''' Set the width of the road specified by the road name'''

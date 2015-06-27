@@ -120,12 +120,12 @@ if args.interactive:
                            " PA (default=1): ")
 
         if choice != '2':
-            startCoords = [40.61, -75.382]
-            endCoords = [40.608, -75.3714]
+            startCoords = [37.35503, -122.00954]
+            endCoords = [37.35807, -122.00557]
 
         else:
-            startCoords = [37.385844, -122.101464]
-            endCoords = [37.395664, -122.083697]
+            startCoords = [37.35503, -122.00954]
+            endCoords = [37.35807, -122.00557]
 
     option = raw_input("Do you want to view the area specified? [Y/N]" +
                        " (default: Y): ").upper()
@@ -172,7 +172,8 @@ osmRoads = Osm2Dict(args.boundingbox[0], args.boundingbox[1],
 
 print "Extracting the map data for gazebo ..."
 #get Road and model details
-roadPointWidthMap, modelPoseMap, buildingLocationMap = osmRoads.getMapDetails()
+#roadPointWidthMap, modelPoseMap, buildingLocationMap = osmRoads.getMapDetails()
+roadPointWidthMap = osmRoads.getRoadDetails()
 if TIMER:
     toc()
 if TIMER:
@@ -186,17 +187,17 @@ sdfFile = GetSDF()
 sdfFile.addSphericalCoords(osmRoads.getLat(), osmRoads.getLon())
 #add Required models
 sdfFile.includeModel("sun")
-for model in modelPoseMap.keys():
-    points = modelPoseMap[model]['points']
-    sdfFile.addModel(modelPoseMap[model]['mainModel'],
-                     model,
-                     [points[0, 0], points[1, 0], points[2, 0]])
+# for model in modelPoseMap.keys():
+#     points = modelPoseMap[model]['points']
+#     sdfFile.addModel(modelPoseMap[model]['mainModel'],
+#                      model,
+#                      [points[0, 0], points[1, 0], points[2, 0]])
 
-for building in buildingLocationMap.keys():
-    sdfFile.addBuilding(buildingLocationMap[building]['mean'],
-                        buildingLocationMap[building]['points'],
-                        building,
-                        buildingLocationMap[building]['color'])
+# for building in buildingLocationMap.keys():
+#     sdfFile.addBuilding(buildingLocationMap[building]['mean'],
+#                         buildingLocationMap[building]['points'],
+#                         building,
+#                         buildingLocationMap[building]['color'])
 
 #Include the roads in the map in sdf file
 for road in roadPointWidthMap.keys():
@@ -208,6 +209,10 @@ for road in roadPointWidthMap.keys():
                               points[1, point],
                               points[2, point]],
                              road)
+        sdfFile.addRoadDebug([points[0, point],
+                              points[1, point],
+                              points[2, point]],
+                              road)
 
 #output sdf File
 sdfFile.writeToFile(args.outFile)
