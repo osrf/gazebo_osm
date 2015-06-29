@@ -227,23 +227,16 @@ for road in roadPointWidthMap.keys():
     # only applying 2d pchip for now
     
 
-    for point in range(len(points[0, :])):
+    # for point in range(len(points[0, :])):
 
-        #if i == 0:
-            # print (' ')
-            # print ('points[0, point] = ' + str(points[0, point]))
-            # print ('points[1, point] = ' + str(points[1, point]))
-            # print ('points[2, point] = ' + str(points[2, point]))
-            # print (' ')
-
-        sdfFile.addRoadPoint([points[0, point],
-                            points[1, point],
-                            points[2, point]],
-                            road)
-        sdfFile.addRoadDebug([points[0, point],
-                              points[1, point],
-                              points[2, point]],
-                              road)
+    #     sdfFile.addRoadPoint([points[0, point],
+    #                         points[1, point],
+    #                         points[2, point]],
+    #                         road)
+    #     sdfFile.addRoadDebug([points[0, point],
+    #                           points[1, point],
+    #                           points[2, point]],
+    #                           road)
     if args.spline:
         xData = points[0, :]
         yData = points[1, :]
@@ -257,7 +250,7 @@ for road in roadPointWidthMap.keys():
             xDataNeg = np.negative(xData)
             print ("xData[0] is greater then xData[-1]")
             #print xDataNeg
-            x_neg = np.arange(xDataNeg[0], xDataNeg[-1], 0.01)
+            x_neg = np.arange(xDataNeg[0], xDataNeg[-1], 0.5)
             x = np.negative(x_neg)
             increasing = False
         else:
@@ -304,8 +297,19 @@ for road in roadPointWidthMap.keys():
         #print str(len(x))
         #print str(len(y))
         #plt.plot(xData, yData, 'ro-', x, y, 'b+')
-        plt.plot(x, y, 'b+')
-        plt.show()
+        #plt.plot(x, y, 'b+')
+        #plt.show()
+
+    #     sdfFile.addRoadPoint([points[0, point],
+    #                         points[1, point],
+    #                         points[2, point]],
+    #                         road)
+
+    for point in range(len(x)):
+        sdfFile.addRoadPoint([x[point], y[point], 0], road)
+        sdfFile.addRoadDebug([x[point], y[point], 0], road)
+
+
 
 #output sdf File
 sdfFile.writeToFile(args.outFile)
