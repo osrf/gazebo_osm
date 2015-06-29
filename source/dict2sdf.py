@@ -75,12 +75,12 @@ class GetSDF:
         script = Et.SubElement(roadMaterial, 'script')
         Et.SubElement(script, 'uri').text = ('file://media/materials/' +
                                                  'scripts/gazebo.material')
-        Et.SubElement(script, 'name').text = 'Gazebo/Grey'
+        Et.SubElement(script, 'name').text = 'Gazebo/Black'
 
     # Adds little box to display location of osm gps point in world
     def addRoadDebug(self, pose, roadName):
 
-        boxModel = self.addModel('wood_cube_2_5cm', roadName + '_debug', pose)
+        boxModel = self.addModel('wood_cube_10cm', roadName + '_debug', pose)
 
 
     def setRoadWidth(self, width, roadName):

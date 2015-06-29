@@ -103,8 +103,8 @@ class Osm2Dict:
         if not coords.any():
             return []
 
-        print ('Degrees Lon: ' + str(coords[:, 0]))
-        print ('Degrees Lat: ' + str(coords[:, 1]))
+        #print ('Degrees Lon: ' + str(coords[:, 0]))
+        #print ('Degrees Lat: ' + str(coords[:, 1]))
 
 
         lon2 = np.radians(coords[:, 0])
@@ -177,10 +177,10 @@ class Osm2Dict:
             if self.latStart <= self.node[node_data].get("lat") <= self.latEnd:
                 return True
             else:
-                print ('Lat Coordinate not in bounds: ' + str(self.node[node_data].get("lat")))
+                # print ('Lat Coordinate not in bounds: ' + str(self.node[node_data].get("lat")))
                 return False
         else:
-            print ('Lon Coordinate not in bounds: ' + str(self.node[node_data].get("lon")))
+            # print ('Lon Coordinate not in bounds: ' + str(self.node[node_data].get("lon")))
             return False
 
 

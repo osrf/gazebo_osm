@@ -2,12 +2,15 @@
 import sys
 sys.path.insert(0, 'source')
 import os
+import numpy as np
 from lxml import etree
 import argparse
 from dict2sdf import GetSDF
 from osm2dict import Osm2Dict
 from getMapImage import getMapImage
 from getOsmFile import getOsmFile
+from roadSmoothing import SmoothRoad
+import matplotlib.pyplot as plt
 
 TIMER = 1
 
@@ -55,6 +58,10 @@ parser.add_argument('-B', '--boundingbox',
 
 parser.add_argument('-r', '--roads',
                     help='Display Roads',
+                    action='store_true')
+
+parser.add_argument('-s', '--spline',
+                    help='Apply Cubic Spline for smoothing road corners',
                     action='store_true')
 
 parser.add_argument('-m', '--models',
@@ -203,20 +210,102 @@ sdfFile.includeModel("sun")
 #                         building,
 #                         buildingLocationMap[building]['color'])
 
+ppp = 0
+
 #Include the roads in the map in sdf file
 for road in roadPointWidthMap.keys():
     sdfFile.addRoad(road, roadPointWidthMap[road]['texture'])
     sdfFile.setRoadWidth(roadPointWidthMap[road]['width'], road)
     points = roadPointWidthMap[road]['points']
+
+## insert bspline code here. do it *per* road line ##
+
+    if ppp == 0:
+        print (' ')
+        print road
+
+    # only applying 2d pchip for now
+    
+
     for point in range(len(points[0, :])):
+
+        #if i == 0:
+            # print (' ')
+            # print ('points[0, point] = ' + str(points[0, point]))
+            # print ('points[1, point] = ' + str(points[1, point]))
+            # print ('points[2, point] = ' + str(points[2, point]))
+            # print (' ')
+
         sdfFile.addRoadPoint([points[0, point],
-                              points[1, point],
-                              points[2, point]],
-                             road)
+                            points[1, point],
+                            points[2, point]],
+                            road)
         sdfFile.addRoadDebug([points[0, point],
                               points[1, point],
                               points[2, point]],
                               road)
+    if args.spline:
+        xData = points[0, :]
+        yData = points[1, :]
+
+        print xData
+        print yData
+
+        #     +           -
+        #   first   >   last
+        if xData[0] > xData[-1]:
+            xDataNeg = np.negative(xData)
+            print ("xData[0] is greater then xData[-1]")
+            #print xDataNeg
+            x_neg = np.arange(xDataNeg[0], xDataNeg[-1], 0.01)
+            x = np.negative(x_neg)
+            increasing = False
+        else:
+            x = np.arange(xData[0], xData[-1], 0.5)
+            increasing = True
+
+        #x = np.linspace(xData[0], xData[-1], 100.0)
+        if ppp == 0:
+            ppp = ppp + 1
+
+            print x
+
+        hermite = SmoothRoad()
+
+        tension = -0.1
+        bias = 0.2
+        continuity = -1.2
+        eps = 0.1
+
+        xPts, yPts = hermite.simplify(xData, yData, eps)
+
+        # print ('[x]: ')
+        # print ('' + str(np.array(xPts)))
+        # print ('[y]: ')
+        # print ('' + str(np.array(yPts)))
+
+        y = []
+        for t in x:
+            print ('T:' + str(t))
+            for i in range(len(xPts) - 1):
+                if increasing:
+                    #if (xPts[i] <= t):
+                        #print ('xPts[' + str(xPts[i]) + '] is less then T at index [' + str(i) + ']')
+                    if (xPts[i] <= t) and (xPts[i+1] > t):
+                        #print ('xPts[' + str(xPts[i]) + '] is less then T: ' + str(t))
+                        break
+                else:
+                    if (xPts[i] >= t) and (xPts[i+1] < t):
+                        #print ('xPts[' + str(xPts[i]) + '] is less then T: ' + str(t))
+                        break
+            deriv0, deriv1 = hermite.derivative(xPts, yPts, i, tension, bias, continuity)
+            y.append(hermite.interpolate(xPts, yPts, i, deriv0, deriv1, t)) 
+
+        #print str(len(x))
+        #print str(len(y))
+        #plt.plot(xData, yData, 'ro-', x, y, 'b+')
+        plt.plot(x, y, 'b+')
+        plt.show()
 
 #output sdf File
 sdfFile.writeToFile(args.outFile)
