@@ -210,7 +210,9 @@ sdfFile.includeModel("sun")
 #                         building,
 #                         buildingLocationMap[building]['color'])
 
-ppp = 0
+print ('')
+print ('Number of Roads: ' + str(len(roadPointWidthMap.keys())))
+print ('')
 
 #Include the roads in the map in sdf file
 for road in roadPointWidthMap.keys():
@@ -220,9 +222,10 @@ for road in roadPointWidthMap.keys():
 
 ## insert bspline code here. do it *per* road line ##
 
-    if ppp == 0:
-        print (' ')
-        print road
+    print ('')
+    print ('')
+    print ('Road: ' + road)
+    print ('-----------------------')
 
     # only applying 2d pchip for now
     
@@ -241,77 +244,112 @@ for road in roadPointWidthMap.keys():
         xData = points[0, :]
         yData = points[1, :]
 
-        print xData
-        print yData
-
-        #     +           -
-        #   first   >   last
-        if xData[0] > xData[-1]:
-            xDataNeg = np.negative(xData)
-            print ("xData[0] is greater then xData[-1]")
-            #print xDataNeg
-            x_neg = np.arange(xDataNeg[0], xDataNeg[-1], 0.5)
-            x = np.negative(x_neg)
-            increasing = False
+        if len(xData) < 3:
+            print ('Cannot apply spline with [' + str(len(xData)) + ']. At least 3 needed.')
+            sdfFile.addRoadPoint([xData[0], yData[0], 0], road)
+            sdfFile.addRoadDebug([xData[0], yData[0], 0], road)
         else:
-            x = np.arange(xData[0], xData[-1], 0.5)
-            increasing = True
+            #     +           -
+            #   first   >   last
+            if xData[0] > xData[-1]:
+                xDataNeg = np.negative(xData)
+                #print ("xData[0] is greater then xData[-1]")
+                print ('xDataNeg:' + str(xDataNeg))
 
-        #x = np.linspace(xData[0], xData[-1], 100.0)
-        if ppp == 0:
-            ppp = ppp + 1
+                xTemp = []
+                res = 4
+                for k in np.arange(len(xDataNeg)):
+                    if k != (len(xDataNeg)-1):
+                        #print ('k: ' + str(k))
+                        temp = np.linspace(xDataNeg[k], xDataNeg[k+1], res)
 
-            print x
+                    for t in np.arange(len(temp)):
+                        #print ('t: ' + str(t))
+                        if (k != 0) and (t == 0):
+                            continue
+                        else:
+                            xTemp.append(temp[t])
 
-        hermite = SmoothRoad()
+                    # xTemp.append(xDataNeg[k])
+                    # xTemp.append((xDataNeg[k + 1] + xDataNeg[k]) / 2 )
 
-        tension = -0.1
-        bias = 0.2
-        continuity = -1.2
-        eps = 0.1
+                print ('xTemp:' + str(xTemp))
 
-        xPts, yPts = hermite.simplify(xData, yData, eps)
+                # x_neg = np.arange(xDataNeg[0], xDataNeg[-1], 5)
+                # x = np.negative(x_neg)
 
-        # print ('[x]: ')
-        # print ('' + str(np.array(xPts)))
-        # print ('[y]: ')
-        # print ('' + str(np.array(yPts)))
+                x = np.negative(xTemp)
 
-        y = []
-        for t in x:
-            print ('T:' + str(t))
-            for i in range(len(xPts) - 1):
-                if increasing:
-                    #if (xPts[i] <= t):
-                        #print ('xPts[' + str(xPts[i]) + '] is less then T at index [' + str(i) + ']')
-                    if (xPts[i] <= t) and (xPts[i+1] > t):
-                        #print ('xPts[' + str(xPts[i]) + '] is less then T: ' + str(t))
-                        break
-                else:
-                    if (xPts[i] >= t) and (xPts[i+1] < t):
-                        #print ('xPts[' + str(xPts[i]) + '] is less then T: ' + str(t))
-                        break
-            deriv0, deriv1 = hermite.derivative(xPts, yPts, i, tension, bias, continuity)
-            y.append(hermite.interpolate(xPts, yPts, i, deriv0, deriv1, t)) 
+                print ('== X is Decreasing ==')
+                increasing = False
+            else:
+                x = np.arange(xData[0], xData[-1], 5)
+                print ('== X is Increasing ==')
+                increasing = True
 
-        #print str(len(x))
-        #print str(len(y))
-        #plt.plot(xData, yData, 'ro-', x, y, 'b+')
-        #plt.plot(x, y, 'b+')
-        #plt.show()
-
-    #     sdfFile.addRoadPoint([points[0, point],
-    #                         points[1, point],
-    #                         points[2, point]],
-    #                         road)
-
-    for point in range(len(x)):
-        sdfFile.addRoadPoint([x[point], y[point], 0], road)
-        sdfFile.addRoadDebug([x[point], y[point], 0], road)
+            #x = np.linspace(xData[0], xData[-1], 100.0)
 
 
 
-#output sdf File
+            hermite = SmoothRoad()
+
+            if increasing:
+                tension = 0.1
+                bias = 0.2
+                continuity = 1.2
+                eps = 0.1
+            else:
+                tension = -0.1
+                bias = 0.2
+                continuity = -1.2
+                eps = 0.1
+
+            xPts, yPts = hermite.simplify(xData, yData, eps)
+
+            # print ('[x]: ')
+            # print ('' + str(np.array(xPts)))
+            # print ('[y]: ')
+            # print ('' + str(np.array(yPts)))
+
+            y = []
+            for t in x:
+                #print ('T:' + str(t))
+                for i in range(len(xPts) - 1):
+                    if increasing:
+                        #if (xPts[i] <= t):
+                            #print ('xPts[' + str(xPts[i]) + '] is less then T at index [' + str(i) + ']')
+                        if (xPts[i] <= t) and (xPts[i+1] > t):
+                            #print ('xPts[' + str(xPts[i]) + '] is LESS then T: ' + str(t))
+                            break 
+                    else:
+                        if (xPts[i] >= t) and (xPts[i+1] < t):
+                            #print ('xPts[' + str(xPts[i]) + '] is GREATER then T: ' + str(t))
+                            break
+                deriv0, deriv1 = hermite.derivative(xPts, yPts, i, tension, bias, continuity)
+                y.append(hermite.interpolate(xPts, yPts, i, deriv0, deriv1, t)) 
+
+            print ('')
+            print ('-- x1:')
+            print xData
+            print ('-- x2:')
+            print np.array(x)
+
+            print ('')
+            print ('-- y1:')
+            print yData
+            print ('-- y2:')
+            print np.array(y)
+            print ('')
+
+            plt.plot(xData, yData, 'ro-', x, y, 'b+')
+            #plt.plot(x, y, 'b+')
+            plt.show()
+
+            for point in range(len(x)):
+                sdfFile.addRoadPoint([x[point], y[point], 0], road)
+                sdfFile.addRoadDebug([x[point], y[point], 0], road)
+
+
 sdfFile.writeToFile(args.outFile)
 if TIMER:
     toc()

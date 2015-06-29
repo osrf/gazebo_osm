@@ -31,7 +31,7 @@ class SmoothRoad:
 		t = (absis - x[i]) / (x[i+1] - x[i])
 		point = (2*t**3 - 3*t**2 + 1)*y[i] + (t**3 - 2*t**2 + t)*deriv0\
 			+ (-2*t**3 + 3*t**2)*y[i+1] + (t**3 - t**2)*deriv1
-		print point
+		# print point
 		return point
 
 
