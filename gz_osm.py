@@ -10,6 +10,7 @@ from osm2dict import Osm2Dict
 from getMapImage import getMapImage
 from getOsmFile import getOsmFile
 from roadSmoothing import SmoothRoad
+from laneBoundaries import LaneBoundaries
 import matplotlib.pyplot as plt
 
 TIMER = 1
@@ -49,6 +50,9 @@ parser.add_argument('-d', '--directory',
                     help='Output directory',
                     type=str,
                     default='./')
+parser.add_argument('-l', '--lanes',
+                    help='export image with lanes',
+                    action='store_true')
 parser.add_argument('-B', '--boundingbox',
                     help=('Give the bounding box for the area\n' +
                           'Format: MinLon MinLat MaxLon MaxLat'),
@@ -91,6 +95,9 @@ if args.models:
 
 if args.roads:
     flags.append('r')
+
+if args.lanes:
+    flags.append('l')
 
 if not(args.roads or args.models or args.buildings) or args.displayAll:
     flags.append('a')
@@ -253,77 +260,117 @@ for road in roadPointWidthMap.keys():
                     sdfFile.addRoadPoint([xData[1], yData[1], 0], road)
                     sdfFile.addRoadDebug([xData[1], yData[1], 0], road)
         else:
-            #     +           -
-            #   first   >   last
-            if xData[0] > xData[-1]:
-                xDataNeg = np.negative(xData)
-                #print ("xData[0] is greater then xData[-1]")
-                print ('xDataNeg:' + str(xDataNeg))
+            x = []
 
-                xTemp = []
-                res = 9
-                for k in np.arange(len(xDataNeg)):
-                    if k != (len(xDataNeg)-1):
-                        #print ('k: ' + str(k))
-                        temp = np.linspace(xDataNeg[k], xDataNeg[k+1], res)
+            for j in np.arange(len(xData)-1):
+                if j != (len(xData)):
 
-                    for t in np.arange(len(temp)):
-                        #print ('t: ' + str(t))
-                        if (k != 0) and (t == 0):
-                            continue
-                        else:
-                            xTemp.append(temp[t])
+                    
 
-                    # xTemp.append(xDataNeg[k])
-                    # xTemp.append((xDataNeg[k + 1] + xDataNeg[k]) / 2 )
+                    if xData[j] > xData[j+1]:
+                        # Decreasing. 
+                        xDataNeg = [-1*xData[j], -1*xData[j+1]]
+                        print ('xDataNeg:' + str(xDataNeg))
+                        xTemp = []
+                        res = 50
 
-                print ('xTemp:' + str(xTemp))
+                        # Should only have two values, j and j+1
+                        temp = np.linspace(xDataNeg[0], xDataNeg[1], res)
 
-                # x_neg = np.arange(xDataNeg[0], xDataNeg[-1], 5)
-                # x = np.negative(x_neg)
+                        for t in np.arange(len(temp)):
+                            if (j != 0) and (t == 0):
+                                continue
+                            else:
+                                x.append(-temp[t])
+                        print ('x:' + str(x))
+                    else:
+                        # Increasing.
+                        xTemp = []
+                        res = 50
+                        print ('J: ' + str(j)   )
+                        temp = np.linspace(xData[j], xData[j+1], res)
+                        print temp
 
-                x = np.negative(xTemp)
+                        for t in np.arange(len(temp)):
+                            if (j != 0) and (t == 0):
+                                continue
+                            else:
+                                x.append(temp[t])                   
 
-                print ('== X is Decreasing ==')
-                increasing = False
-            else:
-                print ('xDataPos:')
-
-                xTemp = []
-                res = 9
-                for k in np.arange(len(xData)):
-                    if k != (len(xData)-1):
-                        #print ('k: ' + str(k))
-                        temp = np.linspace(xData[k], xData[k+1], res)
-
-                    for t in np.arange(len(temp)):
-                        #print ('t: ' + str(t))
-                        if (k != 0) and (t == 0):
-                            continue
-                        else:
-                            xTemp.append(temp[t])
+                
 
 
-                x = xTemp
-                print ('== X is Increasing ==')
-                increasing = True
+# #######
 
-            #x = np.linspace(xData[0], xData[-1], 100.0)
+#             #     +           -
+#             #   first   >   last
+#             if xData[0] > xData[-1]:
+#                 xDataNeg = np.negative(xData)
+#                 #print ("xData[0] is greater then xData[-1]")
+#                 print ('xDataNeg:' + str(xDataNeg))
 
+#                 xTemp = []
+#                 res = 9
+#                 for k in np.arange(len(xDataNeg)):
+#                     if k != (len(xDataNeg)-1):
+#                         #print ('k: ' + str(k))
+#                         temp = np.linspace(xDataNeg[k], xDataNeg[k+1], res)
+
+#                     for t in np.arange(len(temp)):
+#                         #print ('t: ' + str(t))
+#                         if (k != 0) and (t == 0):
+#                             continue
+#                         else:
+#                             xTemp.append(temp[t])
+
+#                     # xTemp.append(xDataNeg[k])
+#                     # xTemp.append((xDataNeg[k + 1] + xDataNeg[k]) / 2 )
+
+#                 print ('xTemp:' + str(xTemp))
+
+#                 # x_neg = np.arange(xDataNeg[0], xDataNeg[-1], 5)
+#                 # x = np.negative(x_neg)
+
+#                 x = np.negative(xTemp)
+
+#                 print ('== X is Decreasing ==')
+#                 increasing = False
+#             else:
+#                 print ('xDataPos:')
+
+#                 xTemp = []
+#                 res = 9
+#                 for k in np.arange(len(xData)):
+#                     if k != (len(xData)-1):
+#                         #print ('k: ' + str(k))
+#                         temp = np.linspace(xData[k], xData[k+1], res)
+
+#                     for t in np.arange(len(temp)):
+#                         #print ('t: ' + str(t))
+#                         if (k != 0) and (t == 0):
+#                             continue
+#                         else:
+#                             xTemp.append(temp[t])
+
+
+#                 x = xTemp
+#                 print ('== X is Increasing ==')
+#                 increasing = True
+
+#             #x = np.linspace(xData[0], xData[-1], 100.0)
+# ########
 
 
             hermite = SmoothRoad()
 
-            if increasing:
-                tension = 0.1
-                bias = 0.2
-                continuity = 1.2
-                eps = 0.1
-            else:
-                tension = 0
-                bias = 0
-                continuity = 0
-                eps = 0.1
+            # if increasing:
+            #     tension = 0.1
+            #     bias = 0.2
+            #     continuity = 1.2
+            #     eps = 0.1
+            # else:
+
+            eps = 0.1
 
             xPts, yPts = hermite.simplify(xData, yData, eps)
 
@@ -333,21 +380,47 @@ for road in roadPointWidthMap.keys():
             # print ('' + str(np.array(yPts)))
 
             y = []
-            for t in x:
-                #print ('T:' + str(t))
-                for i in range(len(xPts) - 1):
+            for t in range(len(x)):
+                if t != (len(x)-1):
+                    if x[t] < x[t+1]:
+                        tension = 0.1
+                        bias = 0.2
+                        continuity = 1.2
+                        increasing = True
+                    else:
+                        tension = 0.0
+                        bias = 0.0
+                        continuity = 0.3
+                        increasing = False
+                for i in range(len(xPts) - 1):        
                     if increasing:
                         #if (xPts[i] <= t):
                             #print ('xPts[' + str(xPts[i]) + '] is less then T at index [' + str(i) + ']')
-                        if (xPts[i] <= t) and (xPts[i+1] > t):
+                        if (xPts[i] <= x[t]) and (xPts[i+1] > x[t]):
                             #print ('xPts[' + str(xPts[i]) + '] is LESS then T: ' + str(t))
                             break 
                     else:
-                        if (xPts[i] >= t) and (xPts[i+1] < t):
+                        if (xPts[i] >= x[t]) and (xPts[i+1] < x[t]):
                             #print ('xPts[' + str(xPts[i]) + '] is GREATER then T: ' + str(t))
-                            break
+                            break                        
                 deriv0, deriv1 = hermite.derivative(xPts, yPts, i, tension, bias, continuity)
-                y.append(hermite.interpolate(xPts, yPts, i, deriv0, deriv1, t)) 
+                y.append(hermite.interpolate(xPts, yPts, i, deriv0, deriv1, x[t])) 
+
+
+                # #print ('T:' + str(t))
+                # for i in range(len(xPts) - 1):
+                #     # if increasing:
+                #     #     #if (xPts[i] <= t):
+                #     #         #print ('xPts[' + str(xPts[i]) + '] is less then T at index [' + str(i) + ']')
+                #     #     if (xPts[i] <= t) and (xPts[i+1] > t):
+                #     #         #print ('xPts[' + str(xPts[i]) + '] is LESS then T: ' + str(t))
+                #     #         break 
+                #     # else:
+                #     if (xPts[i] >= x[t]) and (xPts[i+1] < x[t]):
+                #         #print ('xPts[' + str(xPts[i]) + '] is GREATER then T: ' + str(t))
+                #         break
+                # deriv0, deriv1 = hermite.derivative(xPts, yPts, i, tension, bias, continuity)
+                # y.append(hermite.interpolate(xPts, yPts, i, deriv0, deriv1, t)) 
 
             print ('')
             print ('-- x1:')
@@ -362,9 +435,31 @@ for road in roadPointWidthMap.keys():
             print np.array(y)
             print ('')
 
+            lanes = LaneBoundaries(x, y)
+
+            [lanePointsA, lanePointsB]  = lanes.createLanes()
+
+
+            xPointsA = []
+            yPointsA = []
+
+            xPointsB = []
+            yPointsB = []
+
+            for i in range(len(lanePointsA)):
+                xPointsA.append(lanePointsA[i][0])
+                yPointsA.append(lanePointsA[i][1])
+
+                xPointsB.append(lanePointsB[i][0])
+                yPointsB.append(lanePointsB[i][1])
+
+            #plt.plot(xData, yData, 'bo-', x, y, 'ro-', xPointsA, yPointsA, 'g-', xPointsB, yPointsB, 'g-')
+
             plt.plot(xData, yData, 'ro-', x, y, 'b+')
-            #plt.plot(x, y, 'b+')
+            ##plt.plot(x, y, 'b+')
             plt.show()
+
+            #lanes.saveImage(lanePointsA, lanePointsB)
 
             for point in range(len(x)):
                 sdfFile.addRoadPoint([x[point], y[point], 0], road)
