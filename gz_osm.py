@@ -246,8 +246,12 @@ for road in roadPointWidthMap.keys():
 
         if len(xData) < 3:
             print ('Cannot apply spline with [' + str(len(xData)) + ']. At least 3 needed.')
-            sdfFile.addRoadPoint([xData[0], yData[0], 0], road)
-            sdfFile.addRoadDebug([xData[0], yData[0], 0], road)
+            if len(xData) == 1:
+                sdfFile.addRoadPoint([xData[0], yData[0], 0], road)
+                sdfFile.addRoadDebug([xData[0], yData[0], 0], road)
+                if len(xData) == 2:
+                    sdfFile.addRoadPoint([xData[1], yData[1], 0], road)
+                    sdfFile.addRoadDebug([xData[1], yData[1], 0], road)
         else:
             #     +           -
             #   first   >   last
@@ -257,7 +261,7 @@ for road in roadPointWidthMap.keys():
                 print ('xDataNeg:' + str(xDataNeg))
 
                 xTemp = []
-                res = 4
+                res = 9
                 for k in np.arange(len(xDataNeg)):
                     if k != (len(xDataNeg)-1):
                         #print ('k: ' + str(k))
@@ -283,7 +287,24 @@ for road in roadPointWidthMap.keys():
                 print ('== X is Decreasing ==')
                 increasing = False
             else:
-                x = np.arange(xData[0], xData[-1], 5)
+                print ('xDataPos:')
+
+                xTemp = []
+                res = 9
+                for k in np.arange(len(xData)):
+                    if k != (len(xData)-1):
+                        #print ('k: ' + str(k))
+                        temp = np.linspace(xData[k], xData[k+1], res)
+
+                    for t in np.arange(len(temp)):
+                        #print ('t: ' + str(t))
+                        if (k != 0) and (t == 0):
+                            continue
+                        else:
+                            xTemp.append(temp[t])
+
+
+                x = xTemp
                 print ('== X is Increasing ==')
                 increasing = True
 
@@ -299,9 +320,9 @@ for road in roadPointWidthMap.keys():
                 continuity = 1.2
                 eps = 0.1
             else:
-                tension = -0.1
-                bias = 0.2
-                continuity = -1.2
+                tension = 0
+                bias = 0
+                continuity = 0
                 eps = 0.1
 
             xPts, yPts = hermite.simplify(xData, yData, eps)
