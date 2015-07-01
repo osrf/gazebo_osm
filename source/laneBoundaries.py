@@ -13,9 +13,9 @@ class LaneBoundaries:
 
 		self.imgInitialized = False
 		self.img = 0
-		self.roadWidth = 4 #default 4 meters from left to right lane
+		self.roadWidth = 6 #default 6 meters from left to right lane
 
-
+	# Code modeled off Road2d.cc from the Gazebo BitBucket
 	def createLanes(self, roadWidth):
 
 		self.roadWidth = roadWidth
@@ -28,12 +28,27 @@ class LaneBoundaries:
 			return
 		else:
 
+			# since xPoints and yPoints lengths are equal, you can use 
+			# either lengths
 			for i in np.arange(len(self.xPoints)):
+
+				# initial scaling factor that is used to scale road width
+				# at turns
 				factor = 1.0
 
+				# initial tangent vector (2D array) between two points
 				tangent = 0
+
+				# the angle between:
+				# the tangent vector index i and i+1 
+				# and
+				# the tangent vector index i and i-1
+				#
+				# this angle later determines where the two side lane points will be 
+				# positioned 
 				theta = 0
 
+				# first case is special, no index behind the current one
 				if i == 0:
 					point1b = [self.xPoints[i+1], self.yPoints[i+1]]
 					point1a = [self.xPoints[i], self.yPoints[i]]
@@ -43,10 +58,10 @@ class LaneBoundaries:
 					theta = np.arctan2(tangent[0], -tangent[1])
 
 				elif i == (len(self.xPoints)-1):
-					# point1b = [self.xPoints[i], self.yPoints[i]]
-					# point1a = [self.xPoints[i-1], self.yPoints[i-1]]
+					point1b = [self.xPoints[i], self.yPoints[i]]
+					point1a = [self.xPoints[i-1], self.yPoints[i-1]]
 
-					# tangent = self.getTangent(point1a, point1b)
+					tangent = self.getTangent(point1a, point1b)
 					break
 				else:
 					point2b = [self.xPoints[i+1], self.yPoints[i+1]]
@@ -66,6 +81,11 @@ class LaneBoundaries:
 
 					theta = np.arctan2(tangent[0], -tangent[1])
 
+					# here we are considering a point to be colinear 
+					# if it above +-0.97. If the dot product gives 
+					# less then +-0.97, that means the lane is turning
+					# so we need to adjust the width of the road with a 
+					# new temporary factor
 					if dot > -0.97 and dot < 0.97:
 						factor = 1.0 / np.sin(np.arccos(dot) * 0.5)
 
@@ -75,7 +95,8 @@ class LaneBoundaries:
 				pointA = [0,0]
 				pointB = [0,0]
 
-				# manually setting 4 as desired with for now
+				# width is considered to be the distance from the center point
+				# to either of the side points. roadWidth/2 * factor
 				width = (self.roadWidth * factor) * 0.5
 
 				pointA[0] = gpsPtStart[0] + (np.cos(theta) * width)
@@ -84,6 +105,7 @@ class LaneBoundaries:
 				pointB[0] = gpsPtStart[0] - (np.cos(theta) * width)
 				pointB[1] = gpsPtStart[1] - (np.sin(theta) * width)
 
+				# store left and right lane points seperately
 				lanePointsA.append(pointA)
 				lanePointsB.append(pointB)
 
@@ -116,13 +138,12 @@ class LaneBoundaries:
 		if scalar <= 0:
 			print ('Cannot scale image < 0 size! Setting to (boundarySize * 1).')
 			scalar = 1
-
+		# [0] = x, and [1] = y
 		size[0] = boundarySize[0] * scalar
 		size[1] = boundarySize[1] * scalar
 
 		print ('Scaled Image Size:' + str(int(size[0])) + ' x ' + str(int(size[1])))
 
-		# img = np.zeros((size[0],size[1],3) , np.uint8)
 		if self.imgInitialized == False:
 			if size[0] > size[1]:
 				self.img = np.zeros((size[0],size[0],3) , np.uint8)
@@ -137,19 +158,17 @@ class LaneBoundaries:
 			xOffset = size[0]/2
 			yOffset = size[1]/2
 
-			
-
 			# drawing second lane (A)
 			for i in range(len(midLane[0])):
 
-				# TODO: losing resolution of lanes with casting to int. 
-				# i*2 is just downsampling the amount of lines drawn since you
-				# would need really high resolution
+				# No downsample occurs for middle lane as it is thicker
+				# and wont cause any rigged edges in the pixels of
+				# the lines
 				if i == 0:
-					startPointX = (int(midLane[0][i]* scalar) ) + xOffset
-					startPointY = (int(midLane[1][i]* scalar) ) + yOffset
+					startPointX = (int(midLane[0][i]* scalar)) + xOffset
+					startPointY = (int(midLane[1][i]* scalar)) + yOffset
 
-					endPointX = (int(midLane[0][(i+1)]* scalar) ) + xOffset
+					endPointX = (int(midLane[0][(i+1)]* scalar)) + xOffset
 					endPointY = (int(midLane[1][(i+1)]* scalar)) + yOffset
 				elif i == (len(midLane[0])):
 					# dont need to draw backwards
@@ -164,18 +183,23 @@ class LaneBoundaries:
 					endPointX = (int(midLane[0][(i-1)]* scalar)) + xOffset
 					endPointY = (int(midLane[1][(i-1)]* scalar)) + yOffset
 
+				# adding a line onto the overall entire image
+				# line width as 60 is equal to 4 meters
 				cv2.line(self.img, (startPointX,startPointY), (endPointX,endPointY), (255,255,255), 60)
 
 		# Drawing the side lanes
 		for index, road in enumerate(roadLanes):
 
+			# Setting the center of the image as the origin 
+			# x = width/2
+			# y = height/2
 			xOffset = size[0]/2
 			yOffset = size[1]/2
 
 			# drawing second lane (A)
+			# down sampling to draw every two road points, to not cause zig zags from pixel to pixel
 			for i in range(len(road[0])/2):
 
-				# TODO: losing resolution of lanes with casting to int. 
 				# i*2 is just downsampling the amount of lines drawn since you
 				# would need really high resolution
 				if i == 0:
@@ -219,12 +243,7 @@ class LaneBoundaries:
 				cv2.line(self.img, (RstartPointX,RstartPointY), (RendPointX,RendPointY), (255,255,255))
 
 		#cv2.imshow('image',self.img)
-		cv2.imwrite('map1.png',self.img)
+		cv2.imwrite('map.png',self.img)
 		cv2.waitKey(0)
 		cv2.destroyAllWindows()
-		os.system('xdg-open ' + 'map1.png')
-
-	def showImage(self):
-		cv2.imshow('image',self.img)
-		cv2.waitKey(0)
-		cv2.destroyAllWindows()
+		os.system('xdg-open ' + 'map.png')
