@@ -79,9 +79,13 @@ class GetSDF:
 
     # Adds little box to display location of osm gps point in world
     def addRoadDebug(self, pose, roadName):
+        boxModel = self.addModel('wood_cube_10cm', roadName + '_leftLane_debug', pose)
 
-        boxModel = self.addModel('wood_cube_10cm', roadName + '_debug', pose)
+    def addLeftLaneDebug(self, pose, roadName):
+        boxModelL = self.addModel('wood_cube_10cm', roadName + '_rightLane_debug', pose)
 
+    def addRightLaneDebug(self, pose, roadName):
+        boxModelR = self.addModel('wood_cube_10cm', roadName + '_debug', pose)
 
     def setRoadWidth(self, width, roadName):
         ''' Set the width of the road specified by the road name'''

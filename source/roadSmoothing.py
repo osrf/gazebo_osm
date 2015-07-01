@@ -7,13 +7,8 @@
 #             Implements function for smoothing road corners, intersections,
 #             and wavy roads.
 ##############################################################################
-from decimal import *
 import numpy as np
-import matplotlib.pyplot as plt
-from numpy.polynomial.hermite import hermfit, hermval
 from dp import simplify_points
-
-from scipy import interpolate
 
 class SmoothRoad:
 
@@ -60,6 +55,19 @@ class SmoothRoad:
 			+ ((1-tension)*(1-bias)*(1-continuity))*(y[i+1]-y[i])/2
 			deriv1 = ((1-tension)*(1+bias)*(1-continuity))*(y[i+1]-y[i])/2\
 			+ ((1-tension)*(1-bias)*(1+continuity))*(y[i+2]-y[i+1])/2
+		# Consider precalculating for speed
+		return deriv0, deriv1
+
+	def splineDerivative(self, x, y, i):
+		if i == 0:
+			deriv0 = (y[1] - y[0])
+			deriv1 = (y[2] - y[0]) / 2.0
+		elif i == len(x) - 2:
+			deriv0 = (y[i+1] - y[i-1]) / 2.0
+			deriv1 = (y[i+1] - y[i])
+		else:
+			deriv0 = (( y[i]-y[i-1] ) /2 + (( y[i+1]-y[i] ) /2))
+			deriv1 = (( y[i+1]-y[i] ) /2 + (( y[i+2]-y[i+1] ) /2))
 		# Consider precalculating for speed
 		return deriv0, deriv1
 
