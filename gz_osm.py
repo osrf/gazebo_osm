@@ -222,11 +222,12 @@ print ('')
 print ('Number of Roads: ' + str(len(roadPointWidthMap.keys())))
 print ('')
 
-fig = plt.figure()
+#fig = plt.figure()
 
 lanes = 0
 
 roadLaneSegments = []
+centerLaneSegments = []
 
 #Include the roads in the map in sdf file
 for idx, road in enumerate(roadPointWidthMap.keys()):
@@ -289,7 +290,7 @@ for idx, road in enumerate(roadPointWidthMap.keys()):
 
         hermite = SmoothRoad()
 
-        eps = 0.0001
+        eps = 0.00001
 
         xPts, yPts = hermite.simplify(xData, yData, eps)
 
@@ -316,13 +317,13 @@ for idx, road in enumerate(roadPointWidthMap.keys()):
             deriv0, deriv1 = hermite.derivative(xPts, yPts, i, tension, bias, continuity)
             y.append(hermite.interpolate(xPts, yPts, i, deriv0, deriv1, x[t])) 
 
-        eps = 0.0001
-
         xSimp, ySimp = hermite.simplify(x, y, eps)
+
+        centerLaneSegments.append([x, y])
 
         lanes = LaneBoundaries(xSimp, ySimp)
 
-        [lanePointsA, lanePointsB]  = lanes.createLanes()
+        [lanePointsA, lanePointsB]  = lanes.createLanes(6)
 
         roadLaneSegments.append([lanePointsA, lanePointsB])
 
@@ -341,13 +342,11 @@ for idx, road in enumerate(roadPointWidthMap.keys()):
             yPointsB.append(lanePointsB[i*2][1])
             #sdfFile.addRightLaneDebug([lanePointsB[i*2][0], lanePointsB[i*2][1], 0], road)
 
-        plt.plot(xData, yData, 'bo', x, y, 'r-', xPointsA, yPointsA, 'g-', xPointsB, yPointsB, 'g-')
+        #plt.plot(xData, yData, 'bo', x, y, 'r-', xPointsA, yPointsA, 'g-', xPointsB, yPointsB, 'g-')
         #plt.plot(xPointsA, yPointsA, 'g-', xPointsB, yPointsB, 'g-')
         #plt.plot(xData, yData, 'ro-', x, y, 'b+')
         ##plt.plot(x, y, 'b+')
         #plt.show()
-
-
 
         # lanes.saveImage(size, lanePointsA, lanePointsB)
 
@@ -364,9 +363,9 @@ for idx, road in enumerate(roadPointWidthMap.keys()):
 print "Generating the image file..."
 size = osmRoads.getMapSize()
 #    args.imageFile = args.directory + args.imageFile
-#lanes.makeImage(size, 1, roadLaneSegments)
+lanes.makeImage(size, 10, roadLaneSegments, centerLaneSegments)
 
-plt.show()
+#plt.show()
 
 sdfFile.writeToFile(args.outFile)
 if TIMER:
