@@ -221,6 +221,8 @@ print ('')
 print ('Number of Roads: ' + str(len(roadPointWidthMap.keys())))
 print ('')
 
+fig = plt.figure()
+
 #Include the roads in the map in sdf file
 for road in roadPointWidthMap.keys():
     sdfFile.addRoad(road, roadPointWidthMap[road]['texture'])
@@ -233,120 +235,121 @@ for road in roadPointWidthMap.keys():
     print ('Road: ' + road)
 
 
-    if args.spline:
-        xData = points[0, :]
-        yData = points[1, :]
+    xData = points[0, :]
+    yData = points[1, :]
 
-        if len(xData) < 3:
-            print ('Cannot apply spline with [' + str(len(xData)) + '] points. At least 3 needed.')
-            if len(xData) == 1:
-                sdfFile.addRoadPoint([xData[0], yData[0], 0], road)
-                sdfFile.addRoadDebug([xData[0], yData[0], 0], road)
-                if len(xData) == 2:
-                    sdfFile.addRoadPoint([xData[1], yData[1], 0], road)
-                    sdfFile.addRoadDebug([xData[1], yData[1], 0], road)
-        else:
-            x = []
+    if len(xData) < 3:
+        print ('Cannot apply spline with [' + str(len(xData)) + '] points. At least 3 needed.')
+        if len(xData) == 1:
+            sdfFile.addRoadPoint([xData[0], yData[0], 0], road)
+            sdfFile.addRoadDebug([xData[0], yData[0], 0], road)
+            if len(xData) == 2:
+                sdfFile.addRoadPoint([xData[1], yData[1], 0], road)
+                sdfFile.addRoadDebug([xData[1], yData[1], 0], road)
+    else:
+        x = []
 
-            for j in np.arange(len(xData)-1):
-                if j != (len(xData)):
+        for j in np.arange(len(xData)-1):
+            if j != (len(xData)):
 
-                    
+                
 
-                    if xData[j] > xData[j+1]:
-                        # Decreasing. 
-                        xDataNeg = [-1*xData[j], -1*xData[j+1]]
-                        xTemp = []
-                        res = 100
+                if xData[j] > xData[j+1]:
+                    # Decreasing. 
+                    xDataNeg = [-1*xData[j], -1*xData[j+1]]
+                    xTemp = []
+                    res = 100
 
-                        # Should only have two values, j and j+1
-                        temp = np.linspace(xDataNeg[0], xDataNeg[1], res)
+                    # Should only have two values, j and j+1
+                    temp = np.linspace(xDataNeg[0], xDataNeg[1], res)
 
-                        for t in np.arange(len(temp)):
-                            if (j != 0) and (t == 0):
-                                continue
-                            else:
-                                x.append(-temp[t])
-                    else:
-                        # Increasing.
-                        xTemp = []
-                        res = 100
+                    for t in np.arange(len(temp)):
+                        if (j != 0) and (t == 0):
+                            continue
+                        else:
+                            x.append(-temp[t])
+                else:
+                    # Increasing.
+                    xTemp = []
+                    res = 100
 
-                        temp = np.linspace(xData[j], xData[j+1], res)
+                    temp = np.linspace(xData[j], xData[j+1], res)
 
-                        for t in np.arange(len(temp)):
-                            if (j != 0) and (t == 0):
-                                continue
-                            else:
-                                x.append(temp[t])                   
-
-
-            hermite = SmoothRoad()
-
-            eps = 0.1
-
-            xPts, yPts = hermite.simplify(xData, yData, eps)
-
-            y = []
-            for t in range(len(x)):
-                if t != (len(x)-1):
-                    if x[t] < x[t+1]:
-                        tension = 0.1
-                        bias = 0.5
-                        continuity = 0.5
-                        increasing = True
-                    else:
-                        tension = 0.5
-                        bias = 0.0
-                        continuity = -1.0
-                        increasing = False
-                for i in range(len(xPts) - 1):        
-                    if increasing:
-                        if (xPts[i] <= x[t]) and (xPts[i+1] > x[t]):
-                            break 
-                    else:
-                        if (xPts[i] >= x[t]) and (xPts[i+1] < x[t]):
-                            break                        
-                deriv0, deriv1 = hermite.derivative(xPts, yPts, i, tension, bias, continuity)
-                y.append(hermite.interpolate(xPts, yPts, i, deriv0, deriv1, x[t])) 
-
-            eps = 0.005
-
-            xSimp, ySimp = hermite.simplify(x, y, eps)
-
-            lanes = LaneBoundaries(xSimp, ySimp)
-
-            [lanePointsA, lanePointsB]  = lanes.createLanes()
+                    for t in np.arange(len(temp)):
+                        if (j != 0) and (t == 0):
+                            continue
+                        else:
+                            x.append(temp[t])                   
 
 
-            xPointsA = []
-            yPointsA = []
+        hermite = SmoothRoad()
 
-            xPointsB = []
-            yPointsB = []
+        eps = 0.0001
 
-            for i in range(len(lanePointsA)/2):
-                xPointsA.append(lanePointsA[i*2][0])
-                yPointsA.append(lanePointsA[i*2][1])
-                #sdfFile.addLeftLaneDebug([lanePointsA[i*2][0], lanePointsA[i*2][1], 0], road)
+        xPts, yPts = hermite.simplify(xData, yData, eps)
 
-                xPointsB.append(lanePointsB[i*2][0])
-                yPointsB.append(lanePointsB[i*2][1])
-                #sdfFile.addRightLaneDebug([lanePointsB[i*2][0], lanePointsB[i*2][1], 0], road)
+        y = []
+        for t in range(len(x)):
+            if t != (len(x)-1):
+                if x[t] < x[t+1]:
+                    tension = 0.1
+                    bias = 0.5
+                    continuity = 0.5
+                    increasing = True
+                else:
+                    tension = 0.5
+                    bias = 0.0
+                    continuity = -1.0
+                    increasing = False
+            for i in range(len(xPts) - 1):        
+                if increasing:
+                    if (xPts[i] <= x[t]) and (xPts[i+1] > x[t]):
+                        break 
+                else:
+                    if (xPts[i] >= x[t]) and (xPts[i+1] < x[t]):
+                        break                        
+            deriv0, deriv1 = hermite.derivative(xPts, yPts, i, tension, bias, continuity)
+            y.append(hermite.interpolate(xPts, yPts, i, deriv0, deriv1, x[t])) 
 
-            #plt.plot(xData, yData, 'bo', x, y, 'r-', xPointsA, yPointsA, 'g-', xPointsB, yPointsB, 'g-')
-            #plt.plot(x, y, 'ro', xPointsA, yPointsA, 'g-', xPointsB, yPointsB, 'g-')
-            #plt.plot(xData, yData, 'ro-', x, y, 'b+')
-            ##plt.plot(x, y, 'b+')
-            #plt.show()
+        eps = 0.0001
 
-            #lanes.saveImage(lanePointsA, lanePointsB)
+        xSimp, ySimp = hermite.simplify(x, y, eps)
 
-            for point in range(len(x)):
-                sdfFile.addRoadPoint([x[point], y[point], 0], road)
-                #sdfFile.addRoadDebug([x[point], y[point], 0], road)
+        lanes = LaneBoundaries(xSimp, ySimp)
+
+        [lanePointsA, lanePointsB]  = lanes.createLanes()
+
+
+        xPointsA = []
+        yPointsA = []
+
+        xPointsB = []
+        yPointsB = []
+
+        for i in range(len(lanePointsA)/2):
+            xPointsA.append(lanePointsA[i*2][0])
+            yPointsA.append(lanePointsA[i*2][1])
+            #sdfFile.addLeftLaneDebug([lanePointsA[i*2][0], lanePointsA[i*2][1], 0], road)
+
+            xPointsB.append(lanePointsB[i*2][0])
+            yPointsB.append(lanePointsB[i*2][1])
+            #sdfFile.addRightLaneDebug([lanePointsB[i*2][0], lanePointsB[i*2][1], 0], road)
+
+        #plt.plot(xData, yData, 'bo', x, y, 'r-', xPointsA, yPointsA, 'g-', xPointsB, yPointsB, 'g-')
+        plt.plot(xPointsA, yPointsA, 'g-', xPointsB, yPointsB, 'g-')
+        #plt.plot(xData, yData, 'ro-', x, y, 'b+')
+        ##plt.plot(x, y, 'b+')
+        #plt.show()
+
+        #lanes.saveImage(lanePointsA, lanePointsB)
+
+        for point in range(len(x)):
+            sdfFile.addRoadPoint([x[point], y[point], 0], road)
+            #sdfFile.addRoadDebug([x[point], y[point], 0], road)
 
     print ('-----------------------')
+
+plt.show()
 
 sdfFile.writeToFile(args.outFile)
 if TIMER:

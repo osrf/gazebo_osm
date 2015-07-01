@@ -171,6 +171,9 @@ class Osm2Dict:
         pointsXYZ = self.getPoints(coords)
         return pointsXYZ
 
+    def getMapBoundaries(self):
+        return self.latStart, self.latEnd, self.lonStart, self.lonEnd
+
     ## Check if node lat/long is in exported bounds
     def checkCoordinateBoundaries(self, node_data):
         if self.lonStart <= self.node[node_data].get("lon") <= self.lonEnd:
