@@ -363,7 +363,10 @@ for idx, road in enumerate(roadPointWidthMap.keys()):
 print "Generating the image file..."
 size = osmRoads.getMapSize()
 #    args.imageFile = args.directory + args.imageFile
-lanes.makeImage(size, 10, roadLaneSegments, centerLaneSegments)
+lanes.makeImage(size, 5, roadLaneSegments, centerLaneSegments)
+
+print ('Long Center: ' + str(osmRoads.getLon()))
+print ('Lat Center : ' + str(osmRoads.getLat()))
 
 #plt.show()
 

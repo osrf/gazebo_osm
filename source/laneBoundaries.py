@@ -146,17 +146,19 @@ class LaneBoundaries:
 
 		if self.imgInitialized == False:
 			if size[0] > size[1]:
-				self.img = np.zeros((size[0],size[0],3) , np.uint8)
+				squareLength = size[0]
+				self.img = np.zeros((squareLength, squareLength, 3) , np.uint8)
 			else:
-				self.img = np.zeros((size[1],size[1],3) , np.uint8)
+				squareLength = size[1]
+				self.img = np.zeros((squareLength, squareLength, 3) , np.uint8)
 
 			self.imgInitialized = True
 
 		# drawing and inflating the middle lane.
 		for midLane in centerLanes:
 
-			xOffset = size[0]/2
-			yOffset = size[1]/2
+			xOffset = squareLength/2
+			yOffset = squareLength/2
 
 			# drawing second lane (A)
 			for i in range(len(midLane[0])):
@@ -174,18 +176,16 @@ class LaneBoundaries:
 					# dont need to draw backwards
 					break	
 				else:			
-					print midLane[0][i]
+
 					startPointX = (int(midLane[0][i]* scalar)) + xOffset
 					startPointY = (int(midLane[1][i]* scalar)) + yOffset
 
-					print midLane[0][i-1]
-					print
 					endPointX = (int(midLane[0][(i-1)]* scalar)) + xOffset
 					endPointY = (int(midLane[1][(i-1)]* scalar)) + yOffset
 
 				# adding a line onto the overall entire image
 				# line width as 60 is equal to 4 meters
-				cv2.line(self.img, (startPointX,startPointY), (endPointX,endPointY), (255,255,255), 60)
+				cv2.line(self.img, (startPointX,startPointY), (endPointX,endPointY), (255,255,255), 30)
 
 		# Drawing the side lanes
 		for index, road in enumerate(roadLanes):
@@ -193,8 +193,8 @@ class LaneBoundaries:
 			# Setting the center of the image as the origin 
 			# x = width/2
 			# y = height/2
-			xOffset = size[0]/2
-			yOffset = size[1]/2
+			xOffset = squareLength/2
+			yOffset = squareLength/2
 
 			# drawing second lane (A)
 			# down sampling to draw every two road points, to not cause zig zags from pixel to pixel
@@ -242,8 +242,20 @@ class LaneBoundaries:
 
 				cv2.line(self.img, (RstartPointX,RstartPointY), (RendPointX,RendPointY), (255,255,255))
 
-		#cv2.imshow('image',self.img)
-		cv2.imwrite('map.png',self.img)
+
+		imgInverted = np.zeros((squareLength, squareLength, 3) , np.uint8)
+		imgInverted[:,:] = (255,255,255)
+
+		imgGreyScale = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+
+		imgGreyScale = cv2.GaussianBlur(imgGreyScale,(5,5),0)
+
+		edges = cv2.Canny(imgGreyScale, 100,200)
+
+		ret,thresh = cv2.threshold(edges,25,255,cv2.THRESH_TOZERO)
+
+		imgGreyScale = cv2.bitwise_not( thresh )
+		cv2.imwrite('map.png',imgGreyScale)
 		cv2.waitKey(0)
 		cv2.destroyAllWindows()
 		os.system('xdg-open ' + 'map.png')

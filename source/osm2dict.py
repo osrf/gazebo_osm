@@ -393,6 +393,6 @@ class Osm2Dict:
     def getLon(self):
         '''Get the longitude of the start point'''
         longRegionCenter = np.median([self.lonStart, self.lonEnd])
-        #print ('Lat Center: ' + str(longRegionCenter) 
+        #print ('Lat Center: ' + str(longRegionCenter)) 
 
         return longRegionCenter
