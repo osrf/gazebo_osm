@@ -12,6 +12,7 @@ from getOsmFile import getOsmFile
 from roadSmoothing import SmoothRoad
 from laneBoundaries import LaneBoundaries
 import matplotlib.pyplot as plt
+import math
 
 TIMER = 1
 
@@ -64,8 +65,8 @@ parser.add_argument('-r', '--roads',
                     help='Display Roads',
                     action='store_true')
 
-parser.add_argument('-s', '--spline',
-                    help='Apply Cubic Spline for smoothing road corners',
+parser.add_argument('-dbg', '--debug',
+                    help='Debug Mode. Gazebo may take a while to load with this.',
                     action='store_true')
 
 parser.add_argument('-m', '--models',
@@ -169,14 +170,14 @@ osmDictionary = getOsmFile(args.boundingbox,
 if TIMER:
     toc()
 
-if args.imageFile:
-    if TIMER:
-        tic()
-    print "Building the image file ..."
-    args.imageFile = args.directory + args.imageFile
-    getMapImage(args.osmFile, args.imageFile)
-    if TIMER:
-        toc()
+# if args.imageFile:
+#     if TIMER:
+#         tic()
+#     print "Building the image file ..."
+#     args.imageFile = args.directory + args.imageFile
+#     getMapImage(args.osmFile, args.imageFile)
+#     if TIMER:
+#         toc()
 
 #Initialize the class
 if TIMER:
@@ -223,8 +224,12 @@ print ('')
 
 fig = plt.figure()
 
+lanes = 0
+
+roadLaneSegments = []
+
 #Include the roads in the map in sdf file
-for road in roadPointWidthMap.keys():
+for idx, road in enumerate(roadPointWidthMap.keys()):
     sdfFile.addRoad(road, roadPointWidthMap[road]['texture'])
     sdfFile.setRoadWidth(roadPointWidthMap[road]['width'], road)
     points = roadPointWidthMap[road]['points']
@@ -319,6 +324,7 @@ for road in roadPointWidthMap.keys():
 
         [lanePointsA, lanePointsB]  = lanes.createLanes()
 
+        roadLaneSegments.append([lanePointsA, lanePointsB])
 
         xPointsA = []
         yPointsA = []
@@ -335,19 +341,30 @@ for road in roadPointWidthMap.keys():
             yPointsB.append(lanePointsB[i*2][1])
             #sdfFile.addRightLaneDebug([lanePointsB[i*2][0], lanePointsB[i*2][1], 0], road)
 
-        #plt.plot(xData, yData, 'bo', x, y, 'r-', xPointsA, yPointsA, 'g-', xPointsB, yPointsB, 'g-')
-        plt.plot(xPointsA, yPointsA, 'g-', xPointsB, yPointsB, 'g-')
+        plt.plot(xData, yData, 'bo', x, y, 'r-', xPointsA, yPointsA, 'g-', xPointsB, yPointsB, 'g-')
+        #plt.plot(xPointsA, yPointsA, 'g-', xPointsB, yPointsB, 'g-')
         #plt.plot(xData, yData, 'ro-', x, y, 'b+')
         ##plt.plot(x, y, 'b+')
         #plt.show()
 
-        #lanes.saveImage(lanePointsA, lanePointsB)
+
+
+        # lanes.saveImage(size, lanePointsA, lanePointsB)
+
+        # if idx == len(roadPointWidthMap.keys())-1:
+        #     lanes.showImage()
 
         for point in range(len(x)):
             sdfFile.addRoadPoint([x[point], y[point], 0], road)
             #sdfFile.addRoadDebug([x[point], y[point], 0], road)
 
     print ('-----------------------')
+
+# if args.imageFile:
+print "Generating the image file..."
+size = osmRoads.getMapSize()
+#    args.imageFile = args.directory + args.imageFile
+#lanes.makeImage(size, 1, roadLaneSegments)
 
 plt.show()
 

@@ -9,6 +9,7 @@
 ##############################################################################
 
 import numpy as np
+import math
 
 
 class Osm2Dict:
@@ -103,28 +104,14 @@ class Osm2Dict:
         if not coords.any():
             return []
 
-        #print ('Degrees Lon: ' + str(coords[:, 0]))
-        #print ('Degrees Lat: ' + str(coords[:, 1]))
-
 
         lon2 = np.radians(coords[:, 0])
         lat2 = np.radians(coords[:, 1])
 
-        # print ('Lon2: ' + str(lon2))
-        # print ('Lon : ' + str(np.radians(self.lonStart)))
-        # print ('Lat2: ' + str(lat2))
-        # print ('Lat : ' + str(np.radians(self.latStart)))
-
-        # dLat = lat2-np.radians(self.latStart)
-        # dLon = lon2-np.radians(self.lonStart)
         dLat = lat2-np.radians(self.getLat())
         dLon = lon2-np.radians(self.getLon())
 
         ## no idea what this letter a is
-        # a = (np.sin(dLat/2) * np.sin(dLat/2) +
-        #      np.sin(dLon/2) * np.sin(dLon/2) *
-        #      np.cos(np.radians(self.latStart)) *
-        #      np.cos(lat2))
         a = (np.sin(dLat/2) * np.sin(dLat/2) +
              np.sin(dLon/2) * np.sin(dLon/2) *
              np.cos(np.radians(self.getLat())) *
@@ -135,11 +122,6 @@ class Osm2Dict:
 
         distance = self.R * c
 
-        # angles = (np.arctan2(np.sin(dLon) * np.cos(lat2),
-        #           np.cos(np.radians(self.latStart)) *
-        #           np.sin(lat2) -
-        #           np.sin(np.radians(self.latStart)) *
-        #           np.cos(lat2) * np.cos(dLon)))
         angles = (np.arctan2(np.sin(dLon) * np.cos(lat2),
                   np.cos(np.radians(self.getLat())) *
                   np.sin(lat2) -
@@ -150,6 +132,32 @@ class Osm2Dict:
                           np.zeros(np.shape(distance))*1000])
 
         return point
+
+    # (1,1) (1,2)
+    # (2,1) (2,2)
+    def getMapSize(self):
+
+        point1 = np.array([self.lonStart, self.latStart])
+        point1 = np.reshape(point1, (1,2))
+        point11 = self.getPoints(point1)
+
+        point2 = np.array([self.lonEnd, self.latEnd])
+        point2 = np.reshape(point2, (1,2))
+        point22 = self.getPoints(point2)
+
+        lat = (point11[0] - point22[0])
+        lon = (point11[1] - point22[1])
+
+        latLength = math.fabs(lat[0])
+        lonLength = math.fabs(lon[0])
+
+        print ('Map Size = ' + str(int(latLength)) + ' x ' + str(int(lonLength)))
+
+        #lat1 = self.getPoints(point1)
+        return int(latLength), int(lonLength)
+        #length = latStart*1000-latEnd*1000
+        #print ('Length: '+ str(latStart) + '-' + str(latEnd) + ' = ' + str(length))
+        #print ('Image Width: ' + str(imgLength))
 
     def latLonToPoints(self, node_ref):
         '''Pulls out the latitude and longitudes of the nodes in the
