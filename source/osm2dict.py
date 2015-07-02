@@ -151,13 +151,10 @@ class Osm2Dict:
         latLength = math.fabs(lat[0])
         lonLength = math.fabs(lon[0])
 
-        print ('Map Size = ' + str(int(latLength)) + ' x ' + str(int(lonLength)))
+        print ('| Map Size    = [ ' + str(int(lonLength)) + ' x ' + str(int(latLength)) + ' ] meters')
 
-        #lat1 = self.getPoints(point1)
         return int(latLength), int(lonLength)
-        #length = latStart*1000-latEnd*1000
-        #print ('Length: '+ str(latStart) + '-' + str(latEnd) + ' = ' + str(length))
-        #print ('Image Width: ' + str(imgLength))
+
 
     def latLonToPoints(self, node_ref):
         '''Pulls out the latitude and longitudes of the nodes in the

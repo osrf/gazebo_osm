@@ -27,12 +27,14 @@ def tic():
 def toc():
     import time
     if 'startTime_for_tictoc' in globals():
-        print ("Elapsed time is " + str(time.time()
+        print ("| Elapsed time: " + str(time.time()
                - startTime_for_tictoc)
-               + " seconds.")
+               + " sec")
     else:
         print "Toc: start time not set"
 
+if TIMER:
+    tic()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--outFile',
@@ -162,13 +164,11 @@ if args.inputOsmFile:
                         float(root[0].get('minlat')),
                         float(root[0].get('maxlon')),
                         float(root[0].get('maxlat'))]
-if TIMER:
-    tic()
-print "Downloading the osm data ... "
+print (' _______________________________')
+print ('|')
+print ('| Downloading the osm data ... ')
 osmDictionary = getOsmFile(args.boundingbox,
                            args.osmFile, args.inputOsmFile)
-if TIMER:
-    toc()
 
 # if args.imageFile:
 #     if TIMER:
@@ -180,29 +180,21 @@ if TIMER:
 #         toc()
 
 #Initialize the class
-if TIMER:
-    tic()
 osmRoads = Osm2Dict(args.boundingbox[0], args.boundingbox[1],
                     args.boundingbox[2], args.boundingbox[3],
                     osmDictionary, flags)
 
-print "Extracting the map data for gazebo ..."
+print ('| Extracting the map data for gazebo ...')
 #get Road and model details
 #roadPointWidthMap, modelPoseMap, buildingLocationMap = osmRoads.getMapDetails()
 roadPointWidthMap = osmRoads.getRoadDetails()
-if TIMER:
-    toc()
-if TIMER:
-    tic()
-print "Building sdf file ..."
+print ('| Building sdf file ...')
 #Initialize the getSdf class
 sdfFile = GetSDF()
 
 
 #Set up the spherical coordinates
 sdfFile.addSphericalCoords(osmRoads.getLat(), osmRoads.getLon())
-print ('Lat Center: '+ str(osmRoads.getLat()))
-print ('Lon Center: '+ str(osmRoads.getLon()))
 
 #add Required models
 sdfFile.includeModel("sun")
@@ -217,10 +209,11 @@ sdfFile.includeModel("sun")
 #                         buildingLocationMap[building]['points'],
 #                         building,
 #                         buildingLocationMap[building]['color'])
-
-print ('')
-print ('Number of Roads: ' + str(len(roadPointWidthMap.keys())))
-print ('')
+print ('|')
+print ('|-----------------------------------')
+print ('| Number of Roads: ' + str(len(roadPointWidthMap.keys())))
+print ('|-----------------------------------')
+#print ('|')
 
 #fig = plt.figure()
 
@@ -235,17 +228,14 @@ for idx, road in enumerate(roadPointWidthMap.keys()):
     sdfFile.setRoadWidth(roadPointWidthMap[road]['width'], road)
     points = roadPointWidthMap[road]['points']
 
-## insert bspline code here. do it *per* road line ##
-
-    print ('')
-    print ('Road: ' + road)
+    print ('| Road' + str(idx+1) + ': ' + road)
 
 
     xData = points[0, :]
     yData = points[1, :]
 
     if len(xData) < 3:
-        print ('Cannot apply spline with [' + str(len(xData)) + '] points. At least 3 needed.')
+        #print ('Cannot apply spline with [' + str(len(xData)) + '] points. At least 3 needed.')
         if len(xData) == 1:
             sdfFile.addRoadPoint([xData[0], yData[0], 0], road)
             sdfFile.addRoadDebug([xData[0], yData[0], 0], road)
@@ -357,19 +347,27 @@ for idx, road in enumerate(roadPointWidthMap.keys()):
             sdfFile.addRoadPoint([x[point], y[point], 0], road)
             #sdfFile.addRoadDebug([x[point], y[point], 0], road)
 
-    print ('-----------------------')
+print ('|')
+print ('|-----------------------------------')
+print ('| Generating the SDF world file...')
+sdfFile.writeToFile(args.outFile)
 
 # if args.imageFile:
-print "Generating the image file..."
+print ('| Generating Image File...')
+print ('|-----------------------------------')
+print ('|')
 size = osmRoads.getMapSize()
 #    args.imageFile = args.directory + args.imageFile
 lanes.makeImage(size, 5, roadLaneSegments, centerLaneSegments)
 
-print ('Long Center: ' + str(osmRoads.getLon()))
-print ('Lat Center : ' + str(osmRoads.getLat()))
+print ('| Lat Center  = '+ str(osmRoads.getLat()))
+print ('| Lon Center  = '+ str(osmRoads.getLon()))
+
 
 #plt.show()
 
-sdfFile.writeToFile(args.outFile)
 if TIMER:
     toc()
+
+print ('|______________________________')
+print ('')

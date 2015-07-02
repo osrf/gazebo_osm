@@ -142,23 +142,18 @@ class LaneBoundaries:
 		size[0] = boundarySize[0] * scalar
 		size[1] = boundarySize[1] * scalar
 
-		print ('Scaled Image Size:' + str(int(size[0])) + ' x ' + str(int(size[1])))
+		print ('| Scaled Size = [ ' + str(int(size[1])) + ' x ' + str(int(size[0])) + ' ] pixels')
 
 		if self.imgInitialized == False:
-			if size[0] > size[1]:
-				squareLength = size[0]
-				self.img = np.zeros((squareLength, squareLength, 3) , np.uint8)
-			else:
-				squareLength = size[1]
-				self.img = np.zeros((squareLength, squareLength, 3) , np.uint8)
+			self.img = np.zeros((size[1], size[0], 3) , np.uint8)
 
 			self.imgInitialized = True
 
 		# drawing and inflating the middle lane.
 		for midLane in centerLanes:
 
-			xOffset = squareLength/2
-			yOffset = squareLength/2
+			xOffset = size[0]/2
+			yOffset = size[1]/2
 
 			# drawing second lane (A)
 			for i in range(len(midLane[0])):
@@ -193,8 +188,8 @@ class LaneBoundaries:
 			# Setting the center of the image as the origin 
 			# x = width/2
 			# y = height/2
-			xOffset = squareLength/2
-			yOffset = squareLength/2
+			xOffset = size[0]/2
+			yOffset = size[1]/2
 
 			# drawing second lane (A)
 			# down sampling to draw every two road points, to not cause zig zags from pixel to pixel
@@ -243,7 +238,7 @@ class LaneBoundaries:
 				cv2.line(self.img, (RstartPointX,RstartPointY), (RendPointX,RendPointY), (255,255,255))
 
 
-		imgInverted = np.zeros((squareLength, squareLength, 3) , np.uint8)
+		imgInverted = np.zeros((size[1], size[0], 3) , np.uint8)
 		imgInverted[:,:] = (255,255,255)
 
 		imgGreyScale = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
@@ -255,6 +250,10 @@ class LaneBoundaries:
 		ret,thresh = cv2.threshold(edges,25,255,cv2.THRESH_TOZERO)
 
 		imgGreyScale = cv2.bitwise_not( thresh )
+
+		imgGreyScale = cv2.transpose(imgGreyScale)
+		imgGreyScale = cv2.flip(imgGreyScale,flipCode=-1)
+
 		cv2.imwrite('map.png',imgGreyScale)
 		cv2.waitKey(0)
 		cv2.destroyAllWindows()
