@@ -74,9 +74,10 @@ Downloads the osm database of the specified area.
 
 Generate World from manually exported .osm file:
 	
-	` ./gz_osm.py -O map.osm`
+`./gz_osm.py -O map.osm`
 	
-	Output file: outFile.sdf (default)
+Output file: outFile.sdf (default)
 
-	Check the file on gazebo
-		gazebo outFile.sdf
+Check the file on gazebo:
+
+`gazebo outFile.sdf`
