@@ -236,12 +236,28 @@ for idx, road in enumerate(roadPointWidthMap.keys()):
 
     if len(xData) < 3:
         #print ('Cannot apply spline with [' + str(len(xData)) + '] points. At least 3 needed.')
-        if len(xData) == 1:
-            sdfFile.addRoadPoint([xData[0], yData[0], 0], road)
-            sdfFile.addRoadDebug([xData[0], yData[0], 0], road)
-            if len(xData) == 2:
-                sdfFile.addRoadPoint([xData[1], yData[1], 0], road)
-                sdfFile.addRoadDebug([xData[1], yData[1], 0], road)
+
+        x = []
+        y = []
+        lanePoint = []
+
+        for j in np.arange(len(xData)):
+            sdfFile.addRoadPoint([xData[j], yData[j], 0], road)
+            lanePoint.append([xData[j],yData[j]])
+            x.append(xData[j])
+            y.append(yData[j])
+
+        # if len(xData) == 1:
+        #     sdfFile.addRoadPoint([xData[0], yData[0], 0], road)
+        #     #sdfFile.addRoadDebug([xData[0], yData[0], 0], road)
+        #     if len(xData) == 2:
+        #         sdfFile.addRoadPoint([xData[1], yData[1], 0], road)
+        #         #sdfFile.addRoadDebug([xData[1], yData[1], 0], road)
+
+
+        roadLaneSegments.append([lanePoint, lanePoint])
+        centerLaneSegments.append([x,y])
+
     else:
         x = []
 

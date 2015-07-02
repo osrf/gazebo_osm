@@ -155,32 +155,62 @@ class LaneBoundaries:
 			xOffset = size[0]/2
 			yOffset = size[1]/2
 
-			# drawing second lane (A)
-			for i in range(len(midLane[0])):
 
-				# No downsample occurs for middle lane as it is thicker
-				# and wont cause any rigged edges in the pixels of
-				# the lines
-				if i == 0:
-					startPointX = (int(midLane[0][i]* scalar)) + xOffset
-					startPointY = (int(midLane[1][i]* scalar)) + yOffset
+			if len(midLane[0]) > 2:
 
-					endPointX = (int(midLane[0][(i+1)]* scalar)) + xOffset
-					endPointY = (int(midLane[1][(i+1)]* scalar)) + yOffset
-				elif i == (len(midLane[0])):
-					# dont need to draw backwards
-					break	
-				else:			
+				# drawing second lane (A)
+				for i in range(len(midLane[0])):
 
-					startPointX = (int(midLane[0][i]* scalar)) + xOffset
-					startPointY = (int(midLane[1][i]* scalar)) + yOffset
+					# No downsample occurs for middle lane as it is thicker
+					# and wont cause any rigged edges in the pixels of
+					# the lines
+					if i == 0:
+						startPointX = (int(midLane[0][i]* scalar)) + xOffset
+						startPointY = (int(midLane[1][i]* scalar)) + yOffset
 
-					endPointX = (int(midLane[0][(i-1)]* scalar)) + xOffset
-					endPointY = (int(midLane[1][(i-1)]* scalar)) + yOffset
+						endPointX = (int(midLane[0][(i+1)]* scalar)) + xOffset
+						endPointY = (int(midLane[1][(i+1)]* scalar)) + yOffset
+					elif i == (len(midLane[0])):
+						# dont need to draw backwards
+						break	
+					else:			
 
-				# adding a line onto the overall entire image
-				# line width as 60 is equal to 4 meters
-				cv2.line(self.img, (startPointX,startPointY), (endPointX,endPointY), (255,255,255), 30)
+						startPointX = (int(midLane[0][i]* scalar)) + xOffset
+						startPointY = (int(midLane[1][i]* scalar)) + yOffset
+
+						endPointX = (int(midLane[0][(i-1)]* scalar)) + xOffset
+						endPointY = (int(midLane[1][(i-1)]* scalar)) + yOffset
+
+					# adding a line onto the overall entire image
+					# line width as 60 is equal to 4 meters
+					cv2.line(self.img, (startPointX,startPointY), (endPointX,endPointY), (255,255,255), 30)
+			else:
+				# If there is only one point, we can draw anything, so disregard it
+				#print ('Road has LESS then four points!')
+				# print len(midLane[0])
+
+				if len(midLane[0]) == 2:
+					# print len(midLane[0])
+					startPointX = (int(midLane[0][0]* scalar) ) + xOffset
+					startPointY = (int(midLane[1][0]* scalar) ) + yOffset
+					endPointX = (int(midLane[0][1]* scalar) ) + xOffset
+					endPointY = (int(midLane[1][1]* scalar)) + yOffset
+
+					cv2.line(self.img, (startPointX,startPointY), (endPointX,endPointY), (255,255,255),30)
+
+				elif len(midLane[0]) <= 4 and len(midLane[0]) > 1:
+					startPointX = (int(midLane[0][0]* scalar) ) + xOffset
+					startPointY = (int(midLane[1][0]* scalar) ) + yOffset
+					endPointX = (int(midLane[0][1]* scalar) ) + xOffset
+					endPointY = (int(midLane[1][1]* scalar)) + yOffset
+					cv2.line(self.img, (startPointX,startPointY), (endPointX,endPointY), (255,255,255),30)
+
+					startPointX = (int(road[0][1]* scalar) ) + xOffset
+					startPointY = (int(road[1][1]* scalar) ) + yOffset
+					endPointX = (int(road[0][2]* scalar) ) + xOffset
+					endPointY = (int(road[1][2]* scalar)) + yOffset
+					cv2.line(self.img, (startPointX,startPointY), (endPointX,endPointY), (255,255,255),30)
+
 
 		# Drawing the side lanes
 		for index, road in enumerate(roadLanes):
@@ -191,52 +221,99 @@ class LaneBoundaries:
 			xOffset = size[0]/2
 			yOffset = size[1]/2
 
-			# drawing second lane (A)
-			# down sampling to draw every two road points, to not cause zig zags from pixel to pixel
-			for i in range(len(road[0])/2):
+			# print ('Road # of points: ' + str(len(road[0])))
 
-				# i*2 is just downsampling the amount of lines drawn since you
-				# would need really high resolution
-				if i == 0:
-					LstartPointX = (int(road[0][i*2][0]* scalar) ) + xOffset
-					LstartPointY = (int(road[0][i*2][1]* scalar) ) + yOffset
+			if len(road[0]) > 4:
+				
+				# print ('Road has more then two points')
 
-					LendPointX = (int(road[0][(i+1)*2][0]* scalar) ) + xOffset
-					LendPointY = (int(road[0][(i+1)*2][1]* scalar)) + yOffset
-				elif i == (len(road[0])-1):
-					# dont need to draw backwards
-					break	
-				else:				
-					LstartPointX = (int(road[0][i*2][0]* scalar)) + xOffset
-					LstartPointY = (int(road[0][i*2][1]* scalar)) + yOffset
+				# drawing second lane (A)
+				# down sampling to draw every two road points, to not cause zig zags from pixel to pixel
+				for i in range(len(road[0])/2):
 
-					LendPointX = (int(road[0][(i-1)*2][0]* scalar)) + xOffset
-					LendPointY = (int(road[0][(i-1)*2][1]* scalar)) + yOffset
+					# i*2 is just downsampling the amount of lines drawn since you
+					# would need really high resolution
+					if i == 0:
+						LstartPointX = (int(road[0][i*2][0]* scalar) ) + xOffset
+						LstartPointY = (int(road[0][i*2][1]* scalar) ) + yOffset
 
-				cv2.line(self.img, (LstartPointX,LstartPointY), (LendPointX,LendPointY), (255,255,255))
+						LendPointX = (int(road[0][(i+1)*2][0]* scalar) ) + xOffset
+						LendPointY = (int(road[0][(i+1)*2][1]* scalar)) + yOffset
+					elif i == (len(road[0])-1):
+						# dont need to draw backwards
+						break	
+					else:				
+						LstartPointX = (int(road[0][i*2][0]* scalar)) + xOffset
+						LstartPointY = (int(road[0][i*2][1]* scalar)) + yOffset
+
+						LendPointX = (int(road[0][(i-1)*2][0]* scalar)) + xOffset
+						LendPointY = (int(road[0][(i-1)*2][1]* scalar)) + yOffset
+
+					cv2.line(self.img, (LstartPointX,LstartPointY), (LendPointX,LendPointY), (255,255,255))
 
 
-			# drawing second lane (B)	
-			for i in range(len(road[1])/2):
+				# drawing second lane (B)	
+				for i in range(len(road[1])/2):
 
-				if i == 0:
-					RstartPointX = (int(road[1][i*2][0]* scalar)) + xOffset
-					RstartPointY = (int(road[1][i*2][1]* scalar)) + yOffset
+					if i == 0:
+						RstartPointX = (int(road[1][i*2][0]* scalar)) + xOffset
+						RstartPointY = (int(road[1][i*2][1]* scalar)) + yOffset
 
-					RendPointX = (int(road[1][(i+1)*2][0]* scalar)) + xOffset
-					RendPointY = (int(road[1][(i+1)*2][1]* scalar)) + yOffset
-				elif i == (len(road[1])-1):
-					# dont need to draw backwards
-					break	
-				else:				
-					RstartPointX = (int(road[1][i*2][0]* scalar)) + xOffset
-					RstartPointY = (int(road[1][i*2][1]* scalar)) + yOffset
+						RendPointX = (int(road[1][(i+1)*2][0]* scalar)) + xOffset
+						RendPointY = (int(road[1][(i+1)*2][1]* scalar)) + yOffset
+					elif i == (len(road[1])-1):
+						# dont need to draw backwards
+						break	
+					else:				
+						RstartPointX = (int(road[1][i*2][0]* scalar)) + xOffset
+						RstartPointY = (int(road[1][i*2][1]* scalar)) + yOffset
 
-					RendPointX = (int(road[1][(i-1)*2][0]* scalar)) + xOffset
-					RendPointY = (int(road[1][(i-1)*2][1]* scalar)) + yOffset
+						RendPointX = (int(road[1][(i-1)*2][0]* scalar)) + xOffset
+						RendPointY = (int(road[1][(i-1)*2][1]* scalar)) + yOffset
 
-				cv2.line(self.img, (RstartPointX,RstartPointY), (RendPointX,RendPointY), (255,255,255))
+					cv2.line(self.img, (RstartPointX,RstartPointY), (RendPointX,RendPointY), (255,255,255))
+			else:
+				# If there is only one point, we can draw anything, so disregard it
+				# print ('Road has LESS then four points!')
+				# print len(road[0])
+				# print road[0]
 
+				if len(road[0]) == 2:
+					for i in range(len(road[0])):
+						LstartPointX = (int(road[0][0][0]* scalar) ) + xOffset
+						LstartPointY = (int(road[0][0][1]* scalar) ) + yOffset
+						LendPointX = (int(road[0][1][0]* scalar) ) + xOffset
+						LendPointY = (int(road[0][1][1]* scalar)) + yOffset
+
+						RstartPointX = (int(road[1][0][0]* scalar) ) + xOffset
+						RstartPointY = (int(road[1][0][1]* scalar) ) + yOffset
+						RendPointX = (int(road[1][1][0]* scalar) ) + xOffset
+						RendPointY = (int(road[1][1][1]* scalar)) + yOffset
+
+						cv2.line(self.img, (LstartPointX,LstartPointY), (LendPointX,LendPointY), (255,255,255))
+						cv2.line(self.img, (RstartPointX,RstartPointY), (RendPointX,RendPointY), (255,255,255))
+				elif len(road[0]) == 3:
+						LstartPointX = (int(road[0][0][0]* scalar) ) + xOffset
+						LstartPointY = (int(road[0][0][1]* scalar) ) + yOffset
+						LendPointX = (int(road[0][1][0]* scalar) ) + xOffset
+						LendPointY = (int(road[0][1][1]* scalar)) + yOffset
+						cv2.line(self.img, (LstartPointX,LstartPointY), (LendPointX,LendPointY), (255,255,255))
+
+						LstartPointX = (int(road[0][1][0]* scalar) ) + xOffset
+						LstartPointY = (int(road[0][1][1]* scalar) ) + yOffset
+						LendPointX = (int(road[0][2][0]* scalar) ) + xOffset
+						LendPointY = (int(road[0][2][1]* scalar)) + yOffset
+						cv2.line(self.img, (LstartPointX,LstartPointY), (LendPointX,LendPointY), (255,255,255))
+
+						RstartPointX = (int(road[1][1][0]* scalar) ) + xOffset
+						RstartPointY = (int(road[1][1][1]* scalar) ) + yOffset
+						RendPointX = (int(road[1][2][0]* scalar) ) + xOffset
+						RendPointY = (int(road[1][2][1]* scalar)) + yOffset
+						
+						cv2.line(self.img, (RstartPointX,RstartPointY), (RendPointX,RendPointY), (255,255,255))
+
+
+		#cv2.imshow('image', self.img)
 
 		imgInverted = np.zeros((size[1], size[0], 3) , np.uint8)
 		imgInverted[:,:] = (255,255,255)
