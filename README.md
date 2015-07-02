@@ -1,4 +1,4 @@
-OSM Plug-in for Gazebo/Stage
+# OSM Plug-in for Gazebo/Stage #
 	
 	Author:         Tashwin Khurana
 	Maintainer:     Krystian Gebis
@@ -7,7 +7,7 @@ OSM Plug-in for Gazebo/Stage
 	                This folder contains files for building osm_plugin for both simulators.
 	
 
-Dependencies:
+## Dependencies: ##
 
 	Python 2.7
 	OpenCV
@@ -15,33 +15,33 @@ Dependencies:
 		https://github.com/mapnik/mapnik/wiki/UbuntuInstallation
 
 
-Files:
+## Files: ##
 
 
-osm2dict.py
+***osm2dict.py***
 
-	Collects data about certain types of roads based on input coordinates from osm database and converts the information received to format that can be used to build sdf files.
+Collects data about certain types of roads based on input coordinates from osm database and converts the information received to format that can be used to build sdf files.
 
-dict2sdf.py
+***dict2sdf.py***
 
-	Used to build sdf file from data received about the elements in the sdf format. 
-	functionality: 
-		add models to world, 
-		add road element, 
-		set road width, 
-		add points to the road element
+Used to build sdf file from data received about the elements in the sdf format. 
+functionality: 
+add models to world, 
+ - add road element, 
+ - set road width, 
+ - add points to the road element
 
-getMapImage.py
+***getMapImage.py***
 
-       Gets the image of the area required to be simulated.
+Gets the image of the area required to be simulated.
        
-getOsmFile.py
+***getOsmFile.py***
 
-       Downloads the osm database of the specified area.
+Downloads the osm database of the specified area.
 
-gz_osm.py
+***gz_osm.py***
 
-       Command line compatible program which combine the functionality of all the above classes and functions to output the .sdf file for gazebo. 
+Command line compatible program which combine the functionality of all the above classes and functions to output the .sdf file for gazebo. 
 
 	usage: gz_osm.py [-h] [-f OUTFILE] [-o OSMFILE] [-O INPUTOSMFILE]
 	                 [-i IMAGEFILE] [-d DIRECTORY]
@@ -71,7 +71,7 @@ gz_osm.py
 
 
 
-**Example Usage:**
+## Example Usage: ##
 
 Generate World from manually exported .osm file:
 	
