@@ -1,26 +1,18 @@
-OSM Plug-in for Gazebo
+OSM Plug-in for Gazebo/Stage
 	
-	Author: Tashwin Khurana
-	
-	Version: 1.0
-	
-	Description: Open Street Maps plugin for Gazebo
-	             This folder contains files for building osm_plugin for gazebo simulator.
+	Author:         Tashwin Khurana
+	Maintainer:     Krystian Gebis
+	Version:        1.9
+	Description:    Open Street Maps plugin for Gazebo and Stage Simulators
+	                This folder contains files for building osm_plugin for both simulators.
 	
 
 Dependencies:
 
 	Python 2.7
-
+	OpenCV
 	Mapnik:
-
-	sudo apt-get install -y python-software-properties
-
-	sudo add-apt-repository ppa:mapnik/v2.2.0
-
-	sudo apt-get update
-
-	sudo apt-get install libmapnik libmapnik-dev mapnik-utils python-mapnik
+		https://github.com/mapnik/mapnik/wiki/UbuntuInstallation
 
 
 Files:
@@ -77,20 +69,13 @@ gz_osm.py
 	  -a, --displayAll      Display roads and models
 	  --interactive         Starts the interactive version of the program
 
-Test files:
 
-Unit testing for each of the source files is provided in the testfiles/ folder.
 
-Usage:
+**Example Usage:**
 
-	Run gz_osm.py file
-
-		$ python gz_osm.py 
-
-                or 
-
-                $ ./gz_osm.py [-h] [-f OUTFILE] [-o OSMFILE] [-i IMAGEFILE] [-d DIRECTORY]
-	                 [-B [BOUNDINGBOX [BOUNDINGBOX ...]]] [-r] [-m] [-b] [-a][--interactive]
+Generate World from manually exported .osm file:
+	
+	` ./gz_osm.py -O map.osm`
 	
 	Output file: outFile.sdf (default)
 
