@@ -1,55 +1,46 @@
-OSM Plug-in for Gazebo
+# OSM Plug-in for Gazebo/Stage #
 	
-	Author: Tashwin Khurana
-	
-	Version: 1.0
-	
-	Description: Open Street Maps plugin for Gazebo
-	             This folder contains files for building osm_plugin for gazebo simulator.
+	Author:         Tashwin Khurana
+	Maintainer:     Krystian Gebis
+	Version:        1.9
+	Description:    Open Street Maps plugin for Gazebo and Stage Simulators
+	                This folder contains files for building osm_plugin for both simulators.
 	
 
-Dependencies:
+## Dependencies: ##
 
 	Python 2.7
-
+	OpenCV
 	Mapnik:
-
-	sudo apt-get install -y python-software-properties
-
-	sudo add-apt-repository ppa:mapnik/v2.2.0
-
-	sudo apt-get update
-
-	sudo apt-get install libmapnik libmapnik-dev mapnik-utils python-mapnik
+		https://github.com/mapnik/mapnik/wiki/UbuntuInstallation
 
 
-Files:
+## Files: ##
 
+***osm2dict.py***
 
-osm2dict.py
+Collects data about certain types of roads based on input coordinates from osm database and converts the information received to format that can be used to build sdf files.
 
-	Collects data about certain types of roads based on input coordinates from osm database and converts the information received to format that can be used to build sdf files.
+***dict2sdf.py***
 
-dict2sdf.py
+Used to build sdf file from data received about the elements in the sdf format. 
+ - functionality: 
+  - add models to world, 
+  - add road element, 
+  - set road width, 
+  - add points to the road element
 
-	Used to build sdf file from data received about the elements in the sdf format. 
-	functionality: 
-		add models to world, 
-		add road element, 
-		set road width, 
-		add points to the road element
+***getMapImage.py***
 
-getMapImage.py
-
-       Gets the image of the area required to be simulated.
+Gets the image of the area required to be simulated.
        
-getOsmFile.py
+***getOsmFile.py***
 
-       Downloads the osm database of the specified area.
+Downloads the osm database of the specified area.
 
-gz_osm.py
+***gz_osm.py***
 
-       Command line compatible program which combine the functionality of all the above classes and functions to output the .sdf file for gazebo. 
+ Command line compatible program which combine the functionality of all the above classes and functions to output the .sdf file for gazebo. 
 
 	usage: gz_osm.py [-h] [-f OUTFILE] [-o OSMFILE] [-O INPUTOSMFILE]
 	                 [-i IMAGEFILE] [-d DIRECTORY]
@@ -77,22 +68,16 @@ gz_osm.py
 	  -a, --displayAll      Display roads and models
 	  --interactive         Starts the interactive version of the program
 
-Test files:
 
-Unit testing for each of the source files is provided in the testfiles/ folder.
 
-Usage:
+## Example Usage: ##
 
-	Run gz_osm.py file
-
-		$ python gz_osm.py 
-
-                or 
-
-                $ ./gz_osm.py [-h] [-f OUTFILE] [-o OSMFILE] [-i IMAGEFILE] [-d DIRECTORY]
-	                 [-B [BOUNDINGBOX [BOUNDINGBOX ...]]] [-r] [-m] [-b] [-a][--interactive]
+Generate World from manually exported .osm file:
 	
-	Output file: outFile.sdf (default)
+`./gz_osm.py -O map.osm`
+	
+Output file: outFile.sdf (default)
 
-	Check the file on gazebo
-		gazebo outFile.sdf
+Check the file on gazebo:
+
+`gazebo outFile.sdf`

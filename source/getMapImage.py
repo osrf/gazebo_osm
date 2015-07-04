@@ -26,11 +26,15 @@ def getMapImage(osmFile, map_output):
                'Please install for getting the image functionality.')
         return -2
 
+    print ('Has Mapnik.')
+
     if osmFile == '':
         print 'Error: getMapImage::No File Recieved'
         return -1
+    else:
+        print ('OSM File: ' + osmFile)
 
-    highwaList = dict({"motorway": {'width': 4,
+    highwayList = dict({"motorway": {'width': 4,
                                     'color': 'green',
                                     'fontSize': 12},
                        "trunk": {'width': 3,
@@ -61,17 +65,17 @@ def getMapImage(osmFile, map_output):
     m = mapnik.Map(1024, 1024)
     m.background = mapnik.Color('white')
 
-    for highwayType in highwaList.keys():
+    for highwayType in highwayList.keys():
         styleType = mapnik.Style()
-
+        print (styleType)
         rule = mapnik.Rule()
 
         rule.filter = mapnik.Expression('[highway]=' + "'" + highwayType + "'")
 
         stk = mapnik.Stroke()
-        stk.color = mapnik.Color(highwaList[highwayType]['color'])
+        stk.color = mapnik.Color(highwayList[highwayType]['color'])
         stk.line_cap = mapnik.line_cap.ROUND_CAP
-        stk.width = highwaList[highwayType]['width']
+        stk.width = highwayList[highwayType]['width']
 
         line_symbolizer = mapnik.LineSymbolizer(stk)
 
@@ -84,7 +88,7 @@ def getMapImage(osmFile, map_output):
 
         text_symbolizer = mapnik.TextSymbolizer(mapnik.Expression("[name]"),
                                                 "DejaVu Sans Book",
-                                                highwaList[highwayType]
+                                                highwayList[highwayType]
                                                           ['fontSize'],
                                                 mapnik.Color('black'))
         text_symbolizer.halo_fill = mapnik.Color('white')
@@ -100,7 +104,7 @@ def getMapImage(osmFile, map_output):
 
     layer = mapnik.Layer('world')
     layer.datasource = ds
-    for highwayType in highwaList.keys():
+    for highwayType in highwayList.keys():
         layer.styles.append(highwayType)
 
     m.layers.append(layer)

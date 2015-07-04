@@ -9,14 +9,17 @@
 ##############################################################################
 
 import numpy as np
+import math
 
 
 class Osm2Dict:
 
-    def __init__(self, lonStart, latStart, data, flags=['a']):
+    def __init__(self, lonStart, latStart, lonEnd, latEnd, data, flags=['a']):
 
         self.latStart = latStart
         self.lonStart = lonStart
+        self.latEnd = latEnd
+        self.lonEnd = lonEnd
         self.data = data
         self.displayAll = 'a' in flags
         self.displayModels = 'm' in flags
@@ -101,31 +104,57 @@ class Osm2Dict:
         if not coords.any():
             return []
 
+
         lon2 = np.radians(coords[:, 0])
         lat2 = np.radians(coords[:, 1])
 
-        dLat = lat2-np.radians(self.latStart)
-        dLon = lon2-np.radians(self.lonStart)
+        dLat = lat2-np.radians(self.getLat())
+        dLon = lon2-np.radians(self.getLon())
 
+        ## no idea what this letter a is
         a = (np.sin(dLat/2) * np.sin(dLat/2) +
              np.sin(dLon/2) * np.sin(dLon/2) *
-             np.cos(np.radians(self.latStart)) *
+             np.cos(np.radians(self.getLat())) *
              np.cos(lat2))
 
+        ## no idea what this letter c is
         c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
 
         distance = self.R * c
 
         angles = (np.arctan2(np.sin(dLon) * np.cos(lat2),
-                  np.cos(np.radians(self.latStart)) *
+                  np.cos(np.radians(self.getLat())) *
                   np.sin(lat2) -
-                  np.sin(np.radians(self.latStart)) *
+                  np.sin(np.radians(self.getLat())) *
                   np.cos(lat2) * np.cos(dLon)))
-
         point = np.array([distance*np.cos(angles) * 1000,
                           -distance*np.sin(angles) * 1000,
                           np.zeros(np.shape(distance))*1000])
+
         return point
+
+    # (1,1) (1,2)
+    # (2,1) (2,2)
+    def getMapSize(self):
+
+        point1 = np.array([self.lonStart, self.latStart])
+        point1 = np.reshape(point1, (1,2))
+        point11 = self.getPoints(point1)
+
+        point2 = np.array([self.lonEnd, self.latEnd])
+        point2 = np.reshape(point2, (1,2))
+        point22 = self.getPoints(point2)
+
+        lat = (point11[0] - point22[0])
+        lon = (point11[1] - point22[1])
+
+        latLength = math.fabs(lat[0])
+        lonLength = math.fabs(lon[0])
+
+        print ('| Map Size    = [ ' + str(int(lonLength)) + ' x ' + str(int(latLength)) + ' ] meters')
+
+        return int(latLength), int(lonLength)
+
 
     def latLonToPoints(self, node_ref):
         '''Pulls out the latitude and longitudes of the nodes in the
@@ -133,18 +162,35 @@ class Osm2Dict:
         coords = np.array([])
         for node in node_ref:
 
-            coords = np.append(coords,
-                               self.node[node]
-                               .get("lon"))
-            coords = np.append(coords,
-                               self.node[node]
-                               .get("lat"))
-            coords = np.reshape(coords,
-                                (len(coords)/2,
-                                 2))
+            if self.checkCoordinateBoundaries(node):
+                coords = np.append(coords,
+                                   self.node[node]
+                                   .get("lon"))
+                coords = np.append(coords,
+                                   self.node[node]
+                                   .get("lat"))
+                coords = np.reshape(coords,
+                                    (len(coords)/2,
+                                     2))
 
         pointsXYZ = self.getPoints(coords)
         return pointsXYZ
+
+    def getMapBoundaries(self):
+        return self.latStart, self.latEnd, self.lonStart, self.lonEnd
+
+    ## Check if node lat/long is in exported bounds
+    def checkCoordinateBoundaries(self, node_data):
+        if self.lonStart <= self.node[node_data].get("lon") <= self.lonEnd:
+            if self.latStart <= self.node[node_data].get("lat") <= self.latEnd:
+                return True
+            else:
+                # print ('Lat Coordinate not in bounds: ' + str(self.node[node_data].get("lat")))
+                return False
+        else:
+            # print ('Lon Coordinate not in bounds: ' + str(self.node[node_data].get("lon")))
+            return False
+
 
     def getRoadDetails(self):
         '''Returns a list of roads with corresponding widths'''
@@ -175,7 +221,9 @@ class Osm2Dict:
                                                           location,
                                                           'width':
                                                           self.highwayType
-                                                          [typeHighway]}
+                                                          [typeHighway],
+                                                          'texture':
+                                                          typeHighway}
         return self.records
 
     def getModelDetails(self):
@@ -334,8 +382,14 @@ class Osm2Dict:
 
     def getLat(self):
         '''Get the latitude of the start point'''
-        return self.latStart
+        latRegionCenter = np.median([self.latStart, self.latEnd])
+        #print ('Lat Center: ' + str(latRegionCenter)) 
+
+        return latRegionCenter
 
     def getLon(self):
         '''Get the longitude of the start point'''
-        return self.lonStart
+        longRegionCenter = np.median([self.lonStart, self.lonEnd])
+        #print ('Lat Center: ' + str(longRegionCenter)) 
+
+        return longRegionCenter

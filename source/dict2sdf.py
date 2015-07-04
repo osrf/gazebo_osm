@@ -9,7 +9,7 @@
 ##############################################################################
 
 import lxml.etree as Et
-import xml.dom.minidom as minidom
+#import xml.dom.minidom as minidom
 import numpy
 
 
@@ -67,10 +67,25 @@ class GetSDF:
                           " " + str(pose[1]) +
                           " " + str(pose[2]) + " 0 0 0")
 
-    def addRoad(self, roadName):
+    def addRoad(self, roadName, roadType):
         '''Add road to sdf file'''
         road = Et.SubElement(self.sdf.find('world'), 'road')
         road.set('name', roadName)
+        roadMaterial = Et.SubElement(road, 'material')
+        script = Et.SubElement(roadMaterial, 'script')
+        Et.SubElement(script, 'uri').text = ('file://media/materials/' +
+                                                 'scripts/gazebo.material')
+        Et.SubElement(script, 'name').text = 'Gazebo/Black'
+
+    # Adds little box to display location of osm gps point in world
+    def addRoadDebug(self, pose, roadName):
+        boxModel = self.addModel('wood_cube_10cm', roadName + '_leftLane_debug', pose)
+
+    def addLeftLaneDebug(self, pose, roadName):
+        boxModelL = self.addModel('wood_cube_10cm', roadName + '_rightLane_debug', pose)
+
+    def addRightLaneDebug(self, pose, roadName):
+        boxModelR = self.addModel('wood_cube_10cm', roadName + '_debug', pose)
 
     def setRoadWidth(self, width, roadName):
         ''' Set the width of the road specified by the road name'''

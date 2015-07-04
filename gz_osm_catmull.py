@@ -11,8 +11,10 @@ from getMapImage import getMapImage
 from getOsmFile import getOsmFile
 from roadSmoothing import SmoothRoad
 from laneBoundaries import LaneBoundaries
+from catmull_rom_spline import catmull_rom
 import matplotlib.pyplot as plt
-import math
+
+
 
 TIMER = 1
 
@@ -259,75 +261,12 @@ for idx, road in enumerate(roadPointWidthMap.keys()):
         centerLaneSegments.append([x,y])
 
     else:
-        x = []
 
-        for j in np.arange(len(xData)-1):
-            if j != (len(xData)):
-
-                
-
-                if xData[j] > xData[j+1]:
-                    # Decreasing. 
-                    xDataNeg = [-1*xData[j], -1*xData[j+1]]
-                    xTemp = []
-                    res = 100
-
-                    # Should only have two values, j and j+1
-                    temp = np.linspace(xDataNeg[0], xDataNeg[1], res)
-
-                    for t in np.arange(len(temp)):
-                        if (j != 0) and (t == 0):
-                            continue
-                        else:
-                            x.append(-temp[t])
-                else:
-                    # Increasing.
-                    xTemp = []
-                    res = 100
-
-                    temp = np.linspace(xData[j], xData[j+1], res)
-
-                    for t in np.arange(len(temp)):
-                        if (j != 0) and (t == 0):
-                            continue
-                        else:
-                            x.append(temp[t])                   
-
-
-        hermite = SmoothRoad()
-
-        eps = 0.00001
-
-        xPts, yPts = hermite.simplify(xData, yData, eps)
-
-        y = []
-        for t in range(len(x)):
-            if t != (len(x)-1):
-                if x[t] < x[t+1]:
-                    tension = 0.1
-                    bias = 0.5
-                    continuity = 0.5
-                    increasing = True
-                else:
-                    tension = 0.5
-                    bias = 0.0
-                    continuity = -1.0
-                    increasing = False
-            for i in range(len(xPts) - 1):        
-                if increasing:
-                    if (xPts[i] <= x[t]) and (xPts[i+1] > x[t]):
-                        break 
-                else:
-                    if (xPts[i] >= x[t]) and (xPts[i+1] < x[t]):
-                        break                        
-            deriv0, deriv1 = hermite.derivative(xPts, yPts, i, tension, bias, continuity)
-            y.append(hermite.interpolate(xPts, yPts, i, deriv0, deriv1, x[t])) 
-
-        xSimp, ySimp = hermite.simplify(x, y, eps)
-
+        x, y = catmull_rom(xData, yData, 100)
+ 
         centerLaneSegments.append([x, y])
 
-        lanes = LaneBoundaries(xSimp, ySimp)
+        lanes = LaneBoundaries(x,y)
 
         [lanePointsA, lanePointsB]  = lanes.createLanes(6)
 
